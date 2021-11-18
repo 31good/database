@@ -1,0 +1,127 @@
+create table Airport(
+code 		int, 
+name 		varchar(20) not null, 
+city 		varchar(20) not null,
+primary key(code)
+);
+
+create table Airline(
+airline_name 	varchar(20), 
+primary key(airline_name)
+);
+
+create table Customer(
+email 		varchar(20),
+name	 	varchar(300) not null,
+password 	varchar(300) not null,
+building_number 	varchar(20),
+street 		varchar(20),
+city 		varchar(20),
+state 		varchar(20), 
+phone_number 	int not null,
+passport_number 	char(9) not null,
+passport_expiration date not null,
+passport_country 	varchar(20) not null,
+date_of_birth 	date not null,
+primary key(email),
+check(email like (%@%))
+);
+
+-- relational
+create table Airplane(
+airline_name 	varchar(20),
+id 		varchar(20) not null,
+num_seats 	int not null, (应该是int)
+primary key(airline_name,id)  (没加id)
+foreign key(airline_name) reference Airline
+	on delete cascade
+	on update cascade
+);
+
+create table Staff(
+username 	varchar(300), 
+password 	varchar(300) not null,
+first_name 	varchar(20) not nulll,
+last_name 	varchar(20) not null,
+date_of_birth 	date not null,
+airline_name 	varchar(20),
+primary key(username)
+foreign key(airline_name) reference Airline
+	on delete cascade
+	on update cascade
+);
+
+create table staff_phone(
+username 	varchar(300),
+phone_number	int,
+primary key(username, phone_number),
+foreign key(username) reference Staff
+	on delete cascade
+	on update cascade
+);
+
+create table Flight(
+flight_number 		varchar(20), 
+departure_date_time 	timestamp,
+airline_name 		varchar(20),
+arrival_date_time 		timestamp,
+base_price 		float not null,
+status 			varchar(20) not null, (需不需要check有哪几种)
+airplane_id 		varchar(20) not null,
+depart_airport_code 	int not null,
+arrive_airport_code 	int not null,
+primary key(flight_number, departure_date_time, airline_name),
+foreign key(depart_airport_code, arrive_airport_code) reference Airport
+	on delete cascade
+	on update cascade,
+foreign key(airline_name) reference Airline
+	on delete cascade
+	on update cascade,
+foreign key(airplane_id) reference Airplane (typo)
+	on delete cascade
+	on update cascade,
+);
+
+create table Ticket(
+ticked_id 			int,
+flight_number 		varchar(20) not null, 
+departure_date_time 	timestamp not null,
+airline_name 		varchar(20) not null,
+primary key(ticket_id)
+foreign key(flight_number, departure_date_time, airline_name) reference Flight
+	on delete cascade
+	on update cascade
+);
+
+create table Rate(
+email 			varchar(20),
+airline_name 		varchar(20),
+departure_date_time 	timestamp,
+flight_number 		varchar(20),
+rating 			numeric(2,1),
+comment 		varchar(300),
+primary key(email, airline_name, departure_date_time, flight_number),
+foreign key(email) reference Customer
+	on delete cascade
+	on update cascade,
+foreign key(airline_name, departure_date_time, flight_number) reference Flight
+	on delete cascade
+	on update cascade,
+check(rating in(0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0))
+);
+
+create table Buy(
+ticked_id 		int,
+email 		varchar(20) not null,
+purcahse_date_time timestamp not null,
+name_on_card 	varchar(40) not null,
+card_type 	varchar(20) not null,  (check就两种卡)
+expiration_date 	date not null,
+primary key(ticket_id),
+foreign key(ticket_id) reference Ticket
+	on delete cascade
+	on update cascade,
+foreign key(email) reference Customer
+	on delete cascade
+	on update cascade
+);

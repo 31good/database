@@ -105,14 +105,21 @@ def registerAuth_staff():
 
 @app.route('/registerAuth_customer', methods=['GET', 'POST'])
 def registerAuth_customer():
-	username = request.form['username']
+	email = request.form['email']
 	name = request.form['name']
 	password = request.form['password']
-	date_of_birth = request.form['Birthday (YYYY-MM-DD)']
-	airline_name = request.form['Airline name']
+	building_number = request.form['Building number']
+	street = request.form['Street name']
+	city = request.form['City']
+	state = request.form['State']
+	phone_number = request.form['phone number']
+	passport_number = request.form['passport number']
+	passport_expiration = request.form['Passport Expiration date(YYYY-MM-DD)']
+	passport_country = request.form['passport country']
+	date_of_birth = request.form['birthday']
 	cursor = conn.cursor()
-	query = 'SELECT * FROM user WHERE username = %s'
-	cursor.execute(query, (username))
+	query = 'SELECT * FROM customer WHERE email = %s'
+	cursor.execute(query, (email))
 	data = cursor.fetchone()
 	error = None
 	if (data):
@@ -120,8 +127,8 @@ def registerAuth_customer():
 		error = "This user already exists"
 		return render_template('register.html', error=error)
 	else:
-		ins = 'INSERT INTO user VALUES(%s, %s, %s, %s,%s, %s)'
-		cursor.execute(ins, (username, password, first_name, last_name, date_of_birth, airline_name))
+		ins = 'INSERT INTO Customer VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+		cursor.execute(ins, (email, name, password,building_number, street, city, state, phone_number, passport_number, passport_expiration, passport_country))
 		conn.commit()
 		cursor.close()
 		return render_template('index.html')

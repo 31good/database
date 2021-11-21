@@ -46,18 +46,17 @@ def register_customer():
 
 @app.route('/flight_search')
 def flight_search():
-    # TODO: 这些fetch需要改
-    username = request.form['username']
-    password = request.form['password']
-    first_name = request.form['First name']
-    last_name = request.form['Last name']
-    date_of_birth = request.form['Birthday (YYYY-MM-DD)']
-    airline_name = request.form['Airline name']
+    # TODO: check
+    source_city = request.form['source_city']
+    source_airport = request.form['source_airport ']
+    des_city = request.form['des_city']
+    des_airport = request.form['des_airport']
+    date=request.form["departure_date"]
     cursor = conn.cursor()
     query = 'SELECT flight_number, departure_date_time, airline_name FROM Airport as S join Flight on depart_airport_code=S.code' \
             'join Airport on arrive_airport_code=code' \
             'WHERE S.city= %s and S.name=%s and city=%s and name=%s and departure_date_time=%s'
-    cursor.execute(query, (username))
+    cursor.execute(query,(source_city,source_airport,des_city,des_airport,date))
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"
@@ -66,18 +65,16 @@ def flight_search():
 
 @app.route('/See_status')
 def See_status():
-    # TODO: 这些fetch需要改
-    username = request.form['username']
-    password = request.form['password']
-    first_name = request.form['First name']
-    last_name = request.form['Last name']
-    date_of_birth = request.form['Birthday (YYYY-MM-DD)']
-    airline_name = request.form['Airline name']
+    # TODO: check
+    airline_name = request.form['airline_name']
+    flight_number = request.form['flight_number']
+    arrival_date = request.form['arrival_date']
+    departure_date = request.form['departure_date']
     cursor = conn.cursor()
     query = 'SELECT status FROM Airport ' \
             'WHERE flight_number = %s and departure_date_time=%s and airline_name=%s ' \
             'and arrival_date_time=%s'
-    cursor.execute(query, (username))
+    cursor.execute(query, (airline_name, flight_number, arrival_date, departure_date))
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"

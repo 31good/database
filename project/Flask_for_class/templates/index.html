@@ -11,10 +11,10 @@
 	<a href="/register_choose">Register</a>
 	<br></br>
 	<form action="/fight_search" method="POST">
-		<input type="text" name="airline_name" placeholder="airline name" required /> </br>
-		<input type="int" name="flight_number" placeholder="flight number" required /></br>
-		<p>Arrival date:</p>
-		<input type="date" name="arrival_date" placeholder="arrival date" required /></br>
+		<input type="text" name="source_city" placeholder="source_city" required /> </br>
+		<input type="text" name="source_airport" placeholder="source airport" required /></br>
+		<input type="text" name="des_city" placeholder="destination city" required /> </br>
+		<input type="text" name="des_airport" placeholder="destination airport" required /></br>
 		<p>Departure date:</p>
 		<input type="date" name="departure_date" placeholder="departure date" required /></br>
 		<input type="submit" value=Search />
@@ -42,10 +42,10 @@
 		</table>
 		<br></br>
 		<form action="/See_status" method="POST">
-			<input type="text" name="source_city" placeholder="source_city" required /> </br>
-			<input type="text" name="source_airport" placeholder="source airport" required /></br>
-			<input type="text" name="des_city" placeholder="destination city" required /> </br>
-			<input type="text" name="des_airport" placeholder="destination airport" required /></br>
+			<input type="text" name="airline_name" placeholder="airline name" required /> </br>
+			<input type="int" name="flight_number" placeholder="flight number" required /></br>
+			<p>Arrival date:</p>
+			<input type="date" name="arrival_date" placeholder="arrival date" required /></br>
 			<p>Departure date:</p>
 			<input type="date" name="departure_date" placeholder="departure date" required /></br>
 			<input type="submit" value=Search />

@@ -16,6 +16,7 @@ conn = pymysql.connect(host='localhost',
 #Define a route to hello function
 @app.route('/')
 def hello():
+
 	return render_template('index.html')
 
 #Define route for login
@@ -91,17 +92,17 @@ def registerAuth_staff():
 	query = 'SELECT * FROM user WHERE username = %s'
 	cursor.execute(query, (username))
 	data = cursor.fetchone()
-	error = None
+	error = "Error with the input"
 	if (data):
 		# If the previous query returns data, then user exists
 		error = "This user already exists"
-		return render_template('register.html', error=error)
+		return render_template('register_staff.html', error=error)
 	else:
 		ins = 'INSERT INTO user VALUES(%s, %s, %s, %s,%s, %s)'
 		cursor.execute(ins, (username, password, first_name, last_name, date_of_birth, airline_name))
 		conn.commit()
 		cursor.close()
-		return render_template('index.html')
+		return render_template('login.html')
 
 @app.route('/registerAuth_customer', methods=['GET', 'POST'])
 def registerAuth_customer():
@@ -121,17 +122,17 @@ def registerAuth_customer():
 	query = 'SELECT * FROM customer WHERE email = %s'
 	cursor.execute(query, (email))
 	data = cursor.fetchone()
-	error = None
+	error = "Error with the information typed in"
 	if (data):
 		# If the previous query returns data, then user exists
 		error = "This user already exists"
-		return render_template('register.html', error=error)
+		return render_template('register_customer.html', error=error)
 	else:
 		ins = 'INSERT INTO Customer VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 		cursor.execute(ins, (email, name, password,building_number, street, city, state, phone_number, passport_number, passport_expiration, passport_country))
 		conn.commit()
 		cursor.close()
-		return render_template('index.html')
+		return render_template('login.html')
 
 
 #Authenticates the register
@@ -163,7 +164,6 @@ def registerAuth():
 
 @app.route('/home')
 def home():
-    
     username = session['username']
     cursor = conn.cursor();
     query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'

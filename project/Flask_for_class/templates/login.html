@@ -2,6 +2,7 @@
 <head>
 </head>
 <body>
+<p1> LOG IN <br /> </p1>
 <form action="/loginAuth" method="POST">
 	<input type="text" name = "username" placeholder="username" required/> </br>
 	<input type="password" name = "password" placeholder="password" required/></br>
@@ -10,7 +11,8 @@
 		<p class="error"><strong>Error:</strong> {{error}}</p>
 	{% endif %}
 </form>
-
+<a href="/staff_register">Staff Registration <br /> </a>
+<a href="/customer_register">Customer Registration <br /> </a>
 <a href="/">Go back</a>
 
 </body>

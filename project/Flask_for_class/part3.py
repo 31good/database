@@ -64,7 +64,7 @@ def flight_search():
     cursor.close()
     ##error = "Error with the input"
     if (len(data) == 0):
-        error = "Invalid input, please check your flight information"
+        error = "No flight founded, please check your flight information"
         return render_template("index.html", error1=error)
         ##error = "Error with the input"
     return render_template("index.html", posts1=data)
@@ -93,7 +93,7 @@ def See_status():
     data = cursor.fetchall()
     cursor.close()
     if(len(data)==0):
-        error="Invalid input, please check your flight information"
+        error="No flight founded, please check your flight information"
         return render_template("index.html",error2=error)
     ##error = "Error with the input"
     return render_template("index.html", posts2=data)
@@ -251,7 +251,9 @@ def post():
     cursor.close()
     return redirect(url_for('home'))
 """
+#customer login behave
 
+#staff login behave
 
 @app.route('/logout')
 def logout():

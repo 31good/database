@@ -72,16 +72,18 @@ def See_status():
     arrival_date = request.form['arrival_date']
     departure_date = request.form['departure_date']
     #TODO: 格式不对
-    time_format = '%Y-%m-%dT%H:%M:%S'
-    arrival_date=time.strptime(arrival_date+":00",time_format)
-    departure_date=time.strptime(departure_date+":00",time_format)
-    print(arrival_date)
+    #time_format = '%Y-%m-%dT%H:%M:%S'
+    #arrival_date=time.strptime(arrival_date+":00",time_format)
+    #departure_date=time.strptime(departure_date+":00",time_format)
+    #print(arrival_date)
     #print()
     cursor = conn.cursor()
-    query = 'SELECT status FROM flight ' \
-            'WHERE flight_number = %s and departure_date_time=%s and airline_name=%s ' \
-            'and arrival_date_time=%s'
-    cursor.execute(query, (airline_name, flight_number, arrival_date, departure_date))
+    query = 'SELECT a.status FROM ' \
+            '(select status, flight_number, date(departure_date_time) as departure_date, ' \
+            'date(arrival_date_time) as arrival_date, airline_name from flight)as a ' \
+            'WHERE a.flight_number = %s and a.departure_date=%s and a.airline_name=%s ' \
+            'and a.arrival_date=%s'
+    cursor.execute(query, (flight_number, departure_date, airline_name, arrival_date))
     data = cursor.fetchall()
     cursor.close()
     print(type(arrival_date))
@@ -151,7 +153,7 @@ def registerAuth_staff():
         error = "This user already exists"
         return render_template('register_staff.html', error=error)
     else:
-        ins = 'INSERT INTO user VALUES(%s, %s, %s, %s,%s, %s)'
+        ins = 'INSERT INTO staff VALUES(%s, %s, %s, %s,%s, %s)'
         cursor.execute(ins, (username, password, first_name, last_name, date_of_birth, airline_name))
         conn.commit()
         cursor.close()

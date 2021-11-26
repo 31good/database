@@ -10,7 +10,7 @@
 	<a href="/register_choose">Register</a>
 	<br></br>
 	<p> Search Flight:</p>
-	<form action="/fight_search" method="POST">
+	<form action="/flight_search" method="POST">
 		<input type="text" name="source_city" placeholder="source_city" required /> </br>
 		<input type="text" name="source_airport" placeholder="source airport" required /></br>
 		<input type="text" name="des_city" placeholder="destination city" required /> </br>
@@ -19,7 +19,7 @@
 		<input type="date" name="departure_date" placeholder="departure date" required /></br>
 		<input type="submit" value=Search />
 		{% if error %}
-			<p class="error"><strong>Error:</strong> {{error}}</p>
+			<p class="error1"><strong>Error:</strong> {{error}}</p>
 		{% endif %}
 		<style type="text/css">
 			table,
@@ -35,7 +35,7 @@
 			{% for line in posts1 %}
 			<tr>
 				<td>{{line['flight_number']}}</td>
-				<td>{{line['departure_date_time']}}</td>
+				<td>{{line['departure_date']}}</td>
 				<td>{{line['airline_name']}}</td>
 			</tr>
 			{% endfor %}

@@ -45,7 +45,7 @@ def register_customer():
     return render_template("register_customer.html")
 
 
-@app.route('/flight_search')
+@app.route('/flight_search', methods=['GET', 'POST'])
 def flight_search():
     # TODO: check
     source_city = request.form['source_city']
@@ -54,14 +54,19 @@ def flight_search():
     des_airport = request.form['des_airport']
     date=request.form["departure_date"]
     cursor = conn.cursor()
-    query = 'SELECT flight_number, departure_date, airline_name FROM Airport as a join ' \
-            '(select flight_number, date(departure_date_time) as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight) ' \
-            'as b on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code' \
-            'WHERE a.city= %s and a.name=%s and c.city=%s and c.name=%s and b.departure_date=%s'
+    query = 'SELECT b.flight_number, b.departure_date, b.airline_name ' \
+            'FROM Airport as a join (select flight_number, date(departure_date_time) ' \
+            'as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
+            'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
+            'and a.name=%s and c.city=%s and c.name=%s and b.departure_date = %s'
     cursor.execute(query,(source_city,source_airport,des_city,des_airport,date))
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"
+    if (len(data) == 0):
+        error = "Invalid input, please check your flight information"
+        return render_template("index.html", error1=error)
+        ##error = "Error with the input"
     return render_template("index.html", posts1=data)
 
 

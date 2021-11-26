@@ -137,10 +137,10 @@ def registerAuth_staff():
     # TODO
     username = request.form['username']
     password = request.form['password']
-    first_name = request.form['First name']
-    last_name = request.form['Last name']
-    date_of_birth = request.form['Birthday (YYYY-MM-DD)']
-    airline_name = request.form['Airline name']
+    first_name = request.form['first_name']
+    last_name = request.form['last_name']
+    date_of_birth = request.form['date_of_birth']
+    airline_name = request.form['airline_name']
     cursor = conn.cursor()
     query = 'SELECT * FROM user WHERE username = %s'
     cursor.execute(query, (username))
@@ -160,18 +160,18 @@ def registerAuth_staff():
 
 @app.route('/registerAuth_customer', methods=['GET', 'POST'])
 def registerAuth_customer():
-    email = request.form['email']
+    email = request.form['username']
     name = request.form['name']
     password = request.form['password']
-    building_number = request.form['Building number']
-    street = request.form['Street name']
-    city = request.form['City']
-    state = request.form['State']
-    phone_number = request.form['phone number']
-    passport_number = request.form['passport number']
-    passport_expiration = request.form['Passport Expiration date(YYYY-MM-DD)']
-    passport_country = request.form['passport country']
-    date_of_birth = request.form['birthday']
+    building_number = request.form['building_number']
+    street = request.form['street']
+    city = request.form['city']
+    state = request.form['state']
+    phone_number = request.form['phone_number']
+    passport_number = request.form['passport_number']
+    passport_expiration = request.form['passport_expiration']
+    passport_country = request.form['passport_country']
+    date_of_birth = request.form['date_of_birth']
     cursor = conn.cursor()
     query = 'SELECT * FROM customer WHERE email = %s'
     cursor.execute(query, (email))

@@ -1,6 +1,7 @@
 # Import Flask Library
 from flask import Flask, render_template, request, session, url_for, redirect
 import pymysql.cursors
+import time
 
 # Initialize the app from Flask
 app = Flask(__name__)
@@ -63,20 +64,31 @@ def flight_search():
     return render_template("index.html", posts1=data)
 
 
-@app.route('/See_status')
+@app.route('/See_status',methods=['GET', 'POST'])
 def See_status():
     # TODO: check
     airline_name = request.form['airline_name']
     flight_number = request.form['flight_number']
     arrival_date = request.form['arrival_date']
     departure_date = request.form['departure_date']
+    #TODO: 格式不对
+    time_format = '%Y-%m-%dT%H:%M:%S'
+    arrival_date=time.strptime(arrival_date+":00",time_format)
+    departure_date=time.strptime(departure_date+":00",time_format)
+    print(arrival_date)
+    #print()
     cursor = conn.cursor()
-    query = 'SELECT status FROM Airport ' \
+    query = 'SELECT status FROM flight ' \
             'WHERE flight_number = %s and departure_date_time=%s and airline_name=%s ' \
             'and arrival_date_time=%s'
     cursor.execute(query, (airline_name, flight_number, arrival_date, departure_date))
     data = cursor.fetchall()
     cursor.close()
+    print(type(arrival_date))
+    print(data)
+    if(len(data)==0):
+        error="Invalid input, please check your flight information"
+        return render_template("index.html",error2=error)
     ##error = "Error with the input"
     return render_template("index.html", posts2=data)
 

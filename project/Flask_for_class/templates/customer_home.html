@@ -2,6 +2,11 @@
 <head>
 </head>
 <body>
+<style type="text/css">
+    table, th, td{
+        border: 1px solid black;
+    }
+</style>
 <h1>Welcome {{username}}</h1>
 <br></br>
 <p>Your Future Flight</p>
@@ -19,6 +24,36 @@
 	</tr>
 {% endfor %}
 </table>
+
+<br></br>
+<p>Search Flights</p>
+<form action="/flight_search_home" method="POST">
+    <input type="text" name="source_city" placeholder="source_city" required /> </br>
+    <input type="text" name="source_airport" placeholder="source airport" required /></br>
+    <input type="text" name="des_city" placeholder="destination city" required /> </br>
+    <input type="text" name="des_airport" placeholder="destination airport" required /></br>
+    <head>Departure date:</head>
+    <input type="date" name="departure_date" placeholder="departure date" required /></br>
+    <input type="submit" value=Search />
+    {% if error %}
+        <p class="error1"><strong>Error:</strong> {{error}}</p>
+    {% endif %}
+    <table>
+        <th>Flight Number</th>
+        <th>Departure Date</th>
+        <th>Airline Name</th>
+        {% for line in Search_flight %}
+        <tr>
+            <td>{{line['flight_number']}}</td>
+            <td>{{line['departure_date']}}</td>
+            <td>{{line['airline_name']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</form>
+<!--- 买票 需要有下拉菜单（根据python定）--->
+<!--- 不确定怎么implement--->
+<p>Comments and Rating for Previous Flights</p>
 
 
 <form action="/post" method="POST">

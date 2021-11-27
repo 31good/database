@@ -70,6 +70,29 @@ def flight_search():
         ##error = "Error with the input"
     return render_template("index.html", posts1=data)
 
+@app.route('/flight_search_home', methods=['GET', 'POST'])
+def flight_search_home():
+    source_city = request.form['source_city']
+    source_airport = request.form['source_airport']
+    des_city = request.form['des_city']
+    des_airport = request.form['des_airport']
+    date=request.form["departure_date"]
+    cursor = conn.cursor()
+    query = 'SELECT b.flight_number, b.departure_date, b.airline_name ' \
+            'FROM Airport as a join (select flight_number, date(departure_date_time) ' \
+            'as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
+            'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
+            'and a.name=%s and c.city=%s and c.name=%s and b.departure_date = %s'
+    cursor.execute(query,(source_city,source_airport,des_city,des_airport,date))
+    data = cursor.fetchall()
+    cursor.close()
+    ##error = "Error with the input"
+    if (len(data) == 0):
+        error = "No flight founded, please check your flight information"
+        return render_template("customer_home.html", error1=error)
+        ##error = "Error with the input"
+    return render_template("customer_home.html", Search_flight=data)
+
 
 @app.route('/See_status',methods=['GET', 'POST'])
 def See_status():
@@ -245,14 +268,14 @@ def future_flight():
     username = session['username']
     cursor = conn.cursor()
     current_time=datetime.datetime.now()
-    current_time=current_time.strftime("%Y-%m-%d %H:%i:%S")
-    query = 'SELECT flight_number, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
-    cursor.execute(query, (username))
+    current_time=current_time.strftime("%Y-%m-%d")
+    query = 'SELECT flight_number, date(departure_date_time) as departure,airline_name FROM Customer natural join Buy' \
+            'natural join Ticket natural join Flight WHERE email = %s and depature>=%s' \
+            'ORDER BY departure_date_time DESC'
+    cursor.execute(query, (username,current_time))
     data1 = cursor.fetchall()
-    for each in data1:
-        print(each['blog_post'])
     cursor.close()
-    return render_template('home.html', username=username, posts=data1)
+    return render_template('customer_home.html', username=username, future_flight=data1)
 
 """
 @app.route('/post', methods=['GET', 'POST'])

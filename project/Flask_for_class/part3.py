@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, session, url_for, redirect
 import pymysql.cursors
 import time
+import datetime
 
 # Initialize the app from Flask
 app = Flask(__name__)
@@ -238,6 +239,20 @@ def home():
     cursor.close()
     return render_template('home.html', username=username, posts=data1)
 
+@app.route('/future_flight', methods=['GET', 'POST'])
+def future_flight():
+    #TODO:
+    username = session['username']
+    cursor = conn.cursor()
+    current_time=datetime.datetime.now()
+    current_time=current_time.strftime("%Y-%m-%d %H:%i:%S")
+    query = 'SELECT flight_number, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
+    cursor.execute(query, (username))
+    data1 = cursor.fetchall()
+    for each in data1:
+        print(each['blog_post'])
+    cursor.close()
+    return render_template('home.html', username=username, posts=data1)
 
 """
 @app.route('/post', methods=['GET', 'POST'])

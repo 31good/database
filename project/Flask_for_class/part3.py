@@ -122,15 +122,25 @@ def See_status():
     ##error = "Error with the input"
     return render_template("index.html", posts2=data)
 
-@app.route("/customer_home/<username>")
-def customer_home(username):
-       session['username'] = username
-       return render_template('customer_home.html', username = username)
-
-@app.route("/staff_home/<username>")
-def staff_home(username):
-       session['username'] = username
-       return render_template('customer_home.html', username = username)
+@app.route('/customer_home')
+def customer_home():
+    username = session['username']
+    cursor = conn.cursor()
+    current_time=datetime.datetime.now()
+    current_time=current_time.strftime("%Y-%m-%d")
+    print(current_time)
+    """query = 'SELECT flight_number, date(departure_date_time) as departure,airline_name ' \
+            'FROM customer natural join buy natural join ticket natural join flight'\
+            'WHERE email = %s and departure>=%s' \
+            'ORDER BY departure_date_time DESC'
+    cursor.execute(query, (username,current_time))"""
+    query = "SELECT flight_number,date(departure_date_time) as dep,airline_name " \
+            "FROM customer natural join buy natural join ticket natural join flight " \
+            "WHERE email = %s and dep>=%s ORDER BY departure_date_time DESC"
+    cursor.execute(query, (username,current_time))
+    data1 = cursor.fetchall()
+    cursor.close()
+    return render_template('customer_home.html', username=username, future_flight=data1)
 
 # Authenticates the login
 @app.route('/loginAuth', methods=['GET', 'POST'])
@@ -162,10 +172,10 @@ def loginAuth():
         session['username'] = username
         if (isStaff):
             # TODO: homepage build for staff
-            return redirect(url_for("staff_home"))
+            return redirect(url_for('staff_home'))
         else:
             # TODO: homepage build for customer
-            return redirect(url_for('customer_home', username = username))
+            return redirect(url_for('customer_home'))
     else:
         # returns an error message to the html page
         error = 'Invalid login or username'
@@ -221,11 +231,11 @@ def registerAuth_customer():
         error = "This user already exists"
         return render_template('register_customer.html', error=error)
     else:
-        ins = 'INSERT INTO Customer VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        ins = 'INSERT INTO Customer VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         cursor.execute(ins, (
             email, name, password, building_number, street, city, state, phone_number, passport_number,
             passport_expiration,
-            passport_country))
+            passport_country, date_of_birth))
         conn.commit()
         cursor.close()
         return render_template('login.html')

@@ -122,6 +122,16 @@ def See_status():
     ##error = "Error with the input"
     return render_template("index.html", posts2=data)
 
+@app.route("/customer_home/<username>")
+def customer_home(username):
+       session['username'] = username
+       return render_template('customer_home.html', username = username)
+
+@app.route("/staff_home/<username>")
+def staff_home(username):
+       session['username'] = username
+       return render_template('customer_home.html', username = username)
+
 # Authenticates the login
 @app.route('/loginAuth', methods=['GET', 'POST'])
 def loginAuth():
@@ -155,12 +165,11 @@ def loginAuth():
             return redirect(url_for("staff_home"))
         else:
             # TODO: homepage build for customer
-            return redirect(url_for('customer_home'))
+            return redirect(url_for('customer_home', username = username))
     else:
         # returns an error message to the html page
         error = 'Invalid login or username'
         return render_template('login.html', error=error)
-
 
 @app.route('/registerAuth_staff', methods=['GET', 'POST'])
 def registerAuth_staff():

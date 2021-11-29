@@ -46,6 +46,26 @@
     {% endif %}
 </form>
 
+<p>Create New Flights:</p>
+<form action="/create_new_flights" method="POST">
+    <input type="text" name="flight_number" placeholder="flight number" required /> </br>
+    <head>Departure date and time:</head>
+    <input type="date" name="departure_date" placeholder="departure date" required /></br>
+    <input type="text" name="airline_name" placeholder="airline name" required /></br>
+    <head>Arrival date and time:</head>
+    <input type="date" name="arrival_date" placeholder="arrival date" required /></br>
+    <input type="float" name="base_price" placeholder="base price" required /> </br>
+    <!--- status 做成 button--->
+    <input type="int" name="airplane_id" placeholder="airplane id" required /></br>
+    <input type="int" name="depart_airport_code" placeholder="depart airport code" required /> </br>
+    <input type="int" name="arrive_airport_code" placeholder="arrive airport code" required /> </br>
+    <input type="submit" value=Search />
+    {% if error2 %}
+        <p class="error2"><strong>Error:</strong> {{error2}}</p>
+    {% endif %}
+</form>
+
+
 <!--- 买票 需要有下拉菜单（根据python定）--->
 <!--- 不确定怎么implement--->
 <p>Comments and Rating for Previous Flights</p>

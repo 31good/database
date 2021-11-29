@@ -53,14 +53,14 @@ def flight_search():
     source_airport = request.form['source_airport']
     des_city = request.form['des_city']
     des_airport = request.form['des_airport']
-    date=request.form["departure_date"]
+    date = request.form["departure_date"]
     cursor = conn.cursor()
     query = 'SELECT b.flight_number, b.departure_date, b.airline_name ' \
             'FROM Airport as a join (select flight_number, date(departure_date_time) ' \
             'as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
             'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
             'and a.name=%s and c.city=%s and c.name=%s and b.departure_date = %s'
-    cursor.execute(query,(source_city,source_airport,des_city,des_airport,date))
+    cursor.execute(query, (source_city, source_airport, des_city, des_airport, date))
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"
@@ -70,20 +70,21 @@ def flight_search():
         ##error = "Error with the input"
     return render_template("index.html", posts1=data)
 
+
 @app.route('/flight_search_home', methods=['GET', 'POST'])
 def flight_search_home():
     source_city = request.form['source_city']
     source_airport = request.form['source_airport']
     des_city = request.form['des_city']
     des_airport = request.form['des_airport']
-    date=request.form["departure_date"]
+    date = request.form["departure_date"]
     cursor = conn.cursor()
     query = 'SELECT b.flight_number, b.departure_date, b.airline_name ' \
             'FROM Airport as a join (select flight_number, date(departure_date_time) ' \
             'as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
             'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
             'and a.name=%s and c.city=%s and c.name=%s and b.departure_date = %s'
-    cursor.execute(query,(source_city,source_airport,des_city,des_airport,date))
+    cursor.execute(query, (source_city, source_airport, des_city, des_airport, date))
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"
@@ -94,19 +95,19 @@ def flight_search_home():
     return render_template("customer_home.html", Search_flight=data)
 
 
-@app.route('/See_status',methods=['GET', 'POST'])
+@app.route('/See_status', methods=['GET', 'POST'])
 def See_status():
     # TODO: check
     airline_name = request.form['airline_name']
     flight_number = request.form['flight_number']
     arrival_date = request.form['arrival_date']
     departure_date = request.form['departure_date']
-    #TODO: 格式不对
-    #time_format = '%Y-%m-%dT%H:%M:%S'
-    #arrival_date=time.strptime(arrival_date+":00",time_format)
-    #departure_date=time.strptime(departure_date+":00",time_format)
-    #print(arrival_date)
-    #print()
+    # TODO: 格式不对
+    # time_format = '%Y-%m-%dT%H:%M:%S'
+    # arrival_date=time.strptime(arrival_date+":00",time_format)
+    # departure_date=time.strptime(departure_date+":00",time_format)
+    # print(arrival_date)
+    # print()
     cursor = conn.cursor()
     query = 'SELECT a.status FROM ' \
             '(select status, flight_number, date(departure_date_time) as departure_date, ' \
@@ -116,31 +117,108 @@ def See_status():
     cursor.execute(query, (flight_number, departure_date, airline_name, arrival_date))
     data = cursor.fetchall()
     cursor.close()
-    if(len(data)==0):
-        error="No flight founded, please check your flight information"
-        return render_template("index.html",error2=error)
+    if (len(data) == 0):
+        error = "No flight founded, please check your flight information"
+        return render_template("index.html", error2=error)
     ##error = "Error with the input"
     return render_template("index.html", posts2=data)
+
 
 @app.route('/customer_home')
 def customer_home():
     username = session['username']
     cursor = conn.cursor()
-    current_time=datetime.datetime.now()
-    current_time=current_time.strftime("%Y-%m-%d")
+    current_time = datetime.datetime.now()
+    current_time = current_time.strftime("%Y-%m-%d")
     print(current_time)
     """query = 'SELECT flight_number, date(departure_date_time) as departure,airline_name ' \
             'FROM customer natural join buy natural join ticket natural join flight'\
             'WHERE email = %s and departure>=%s' \
             'ORDER BY departure_date_time DESC'
     cursor.execute(query, (username,current_time))"""
+    ##TODO: 怎么找到future
     query = "SELECT flight_number,date(departure_date_time) as dep,airline_name " \
             "FROM customer natural join buy natural join ticket natural join flight " \
-            "WHERE email = %s and dep>=%s ORDER BY departure_date_time DESC"
-    cursor.execute(query, (username,current_time))
+            "WHERE email = %s ORDER BY departure_date_time DESC"
+    cursor.execute(query, (username))
     data1 = cursor.fetchall()
     cursor.close()
     return render_template('customer_home.html', username=username, future_flight=data1)
+
+
+@app.route('/staff_home')
+def staff_home():
+    username = session['username']
+    cursor = conn.cursor()
+    query = "SELECT flight_number,departure_date_time,airline_name " \
+            "FROM staff natural join airline natural join flight " \
+            "WHERE username = %s ORDER BY departure_date_time DESC"
+    cursor.execute(query, (username))
+    data1 = cursor.fetchall()
+    cursor.close()
+    return render_template('staff_home.html', username=username, airline_fights=data1)
+
+
+@app.route('/create_new_airport', methods=['GET', 'POST'])
+def create_new_airport():
+    username = session["username"]
+    code = request.form['code']
+    airport_name = request.form['airport_name']
+    city = request.form["city"]
+    cursor = conn.cursor()
+    query = 'SELECT * FROM staff WHERE username = %s'
+    cursor.execute(query, (username))
+    data = cursor.fetchone()
+    error = None
+    if (not data):
+        error = "No authentication for this action"
+        return render_template('staff_home.html', error1=error)
+    else:
+        query = 'SELECT * FROM airport WHERE code = %s'
+        cursor.execute(query, (code))
+        data = cursor.fetchone()
+        if (data):
+            error = "That code for airport has already existed"
+            return render_template('staff_home.html', error1=error)
+        else:
+            query = 'INSERT INTO airport VALUES(%s,%s,%s)'
+            cursor.execute(query, (code, airport_name, city))
+        return render_template("staff_home.html")
+
+
+@app.route('/create_new_airplane', methods=['GET', 'POST'])
+def create_new_airplane():
+    username = session["username"]
+    airline_name = request.form['airline_name']
+    id = request.form['id']
+    num_seats = request.form["num_seats"]
+    cursor = conn.cursor()
+    query = 'SELECT * FROM staff WHERE username = %s'
+    cursor.execute(query, (username))
+    data = cursor.fetchone()
+    error = None
+    if (not data):
+        error = "No authentication for this action"
+        return render_template('staff_home.html', error2=error)
+    else:
+        query = 'SELECT * FROM airline WHERE airline_name = %s'
+        cursor.execute(query, (airline_name))
+        data = cursor.fetchone()
+        if (not data):
+            error = "That airline does not exist"
+            return render_template('staff_home.html', error2=error)
+        else:
+            query = 'SELECT * FROM airplane WHERE airline_name = %s and airplane_id = %s'
+            cursor.execute(query, (airline_name, id))
+            data = cursor.fetchone()
+            if (data):
+                error = "That code of airplane has already existed"
+                return render_template('staff_home.html', error2=error)
+            else:
+                query = 'INSERT INTO airplane VALUES(%s,%s,%s)'
+                cursor.execute(query, (airline_name, id, num_seats))
+                return render_template("staff_home.html")
+
 
 # Authenticates the login
 @app.route('/loginAuth', methods=['GET', 'POST'])
@@ -180,6 +258,7 @@ def loginAuth():
         # returns an error message to the html page
         error = 'Invalid login or username'
         return render_template('login.html', error=error)
+
 
 @app.route('/registerAuth_staff', methods=['GET', 'POST'])
 def registerAuth_staff():
@@ -281,20 +360,6 @@ def home():
     cursor.close()
     return render_template('home.html', username=username, posts=data1)
 
-@app.route('/future_flight', methods=['GET', 'POST'])
-def future_flight():
-    #TODO:
-    username = session['username']
-    cursor = conn.cursor()
-    current_time=datetime.datetime.now()
-    current_time=current_time.strftime("%Y-%m-%d")
-    query = 'SELECT flight_number, date(departure_date_time) as departure,airline_name FROM Customer natural join Buy' \
-            'natural join Ticket natural join Flight WHERE email = %s and depature>=%s' \
-            'ORDER BY departure_date_time DESC'
-    cursor.execute(query, (username,current_time))
-    data1 = cursor.fetchall()
-    cursor.close()
-    return render_template('customer_home.html', username=username, future_flight=data1)
 
 """
 @app.route('/post', methods=['GET', 'POST'])
@@ -308,9 +373,11 @@ def post():
     cursor.close()
     return redirect(url_for('home'))
 """
-#customer login behave
 
-#staff login behave
+
+# customer login behave
+
+# staff login behave
 
 @app.route('/logout')
 def logout():

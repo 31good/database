@@ -9,76 +9,46 @@
 </style>
 <h1>Welcome {{username}}</h1>
 <br></br>
-<p>Your Future Flight</p>
-<form action="/future_flight" method="POST">
-</form>
+<p>View My Flights</p>
 <table>
 	<th>Flight Number</th>
 	<th>Departure Time</th>
     <th>Airline Name</th>
-{% for line in future_flight %}
+{% for line in airline_fights %}
 	<tr>
 		<td>{{line['flight_number']}}</td>
 		<td>{{line['departure_date_time']}}</td>
-        <td>{{line['aireline_name']}}</td>
+        <td>{{line['airline_name']}}</td>
 	</tr>
 {% endfor %}
 </table>
 
 <br></br>
-<p>Search Flights</p>
-<form action="/flight_search_home" method="POST">
-    <input type="text" name="source_city" placeholder="source_city" required /> </br>
-    <input type="text" name="source_airport" placeholder="source airport" required /></br>
-    <input type="text" name="des_city" placeholder="destination city" required /> </br>
-    <input type="text" name="des_airport" placeholder="destination airport" required /></br>
-    <head>Departure date:</head>
-    <input type="date" name="departure_date" placeholder="departure date" required /></br>
+<p>Create New Airport:</p>
+<form action="/create_new_airport" method="POST">
+    <input type="number" name="code" placeholder="airport code" required /> </br>
+    <input type="text" name="airport_name" placeholder="airport name" required /></br>
+    <input type="text" name="city" placeholder="city" required /> </br>
     <input type="submit" value=Search />
-    {% if error %}
-        <p class="error1"><strong>Error:</strong> {{error}}</p>
+    {% if error1 %}
+        <p class="error1"><strong>Error:</strong> {{error1}}</p>
     {% endif %}
-    <table>
-        <th>Flight Number</th>
-        <th>Departure Date</th>
-        <th>Airline Name</th>
-        {% for line in Search_flight %}
-        <tr>
-            <td>{{line['flight_number']}}</td>
-            <td>{{line['departure_date']}}</td>
-            <td>{{line['airline_name']}}</td>
-        </tr>
-        {% endfor %}
-    </table>
 </form>
+
+<p>Create New Airplane:</p>
+<form action="/create_new_airplane" method="POST">
+    <input type="text" name="airline_name" placeholder="airline name" required /> </br>
+    <input type="text" name="id" placeholder="id" required /></br>
+    <input type="int" name="num_seats" placeholder="number of seats" required /> </br>
+    <input type="submit" value=Search />
+    {% if error2 %}
+        <p class="error2"><strong>Error:</strong> {{error2}}</p>
+    {% endif %}
+</form>
+
 <!--- 买票 需要有下拉菜单（根据python定）--->
 <!--- 不确定怎么implement--->
 <p>Comments and Rating for Previous Flights</p>
-
-
-<form action="/post" method="POST">
-	<h1>Welcome {{username}}</h1>
-	<input type="text" name = "blog" placeholder="post" required/> </br>
-	<input type="submit" value = Post />
-</form>
-
-<style type="text/css">
-	table, th, td{
-		border: 1px solid black;
-	}
-</style>
-
-<table>
-	<th>Time</th>
-	<th>Post</th>
-
-{% for line in posts %}
-	<tr>
-		<td>{{line['ts']}}</td>
-		<td>{{line['blog_post']}}</td>
-	</tr>
-{% endfor %}
-</table>
 
 <a href="/logout">Logout</a>
 

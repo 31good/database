@@ -10,8 +10,6 @@
 <h1>Welcome {{username}}</h1>
 <br></br>
 <p>Your Future Flight</p>
-<form action="/future_flight" method="POST">
-</form>
 <table>
 	<th>Flight Number</th>
 	<th>Departure Time</th>
@@ -20,7 +18,7 @@
 	<tr>
 		<td>{{line['flight_number']}}</td>
 		<td>{{line['departure_date_time']}}</td>
-        <td>{{line['aireline_name']}}</td>
+        <td>{{line['airline_name']}}</td>
 	</tr>
 {% endfor %}
 </table>
@@ -35,8 +33,8 @@
     <head>Departure date:</head>
     <input type="date" name="departure_date" placeholder="departure date" required /></br>
     <input type="submit" value=Search />
-    {% if error %}
-        <p class="error1"><strong>Error:</strong> {{error}}</p>
+    {% if error1 %}
+        <p class="error1"><strong>Error:</strong> {{error1}}</p>
     {% endif %}
     <table>
         <th>Flight Number</th>

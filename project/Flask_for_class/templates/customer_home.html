@@ -1,89 +1,152 @@
 <html>
+
 <head>
 </head>
-<body>
-<style type="text/css">
-    table, th, td{
-        border: 1px solid black;
-    }
-</style>
-<h1>Welcome {{username}}</h1>
-<br></br>
-<p>Your Future Flight</p>
-<table>
-	<th>Flight Number</th>
-	<th>Departure Time</th>
-    <th>Airline Name</th>
-{% for line in future_flight %}
-	<tr>
-		<td>{{line['flight_number']}}</td>
-		<td>{{line['departure_date_time']}}</td>
-        <td>{{line['airline_name']}}</td>
-	</tr>
-{% endfor %}
-</table>
 
-<br></br>
-<p>Search Flights</p>
-<form action="/flight_search_home" method="POST">
-    <input type="text" name="source_city" placeholder="source_city" required /> </br>
-    <input type="text" name="source_airport" placeholder="source airport" required /></br>
-    <input type="text" name="des_city" placeholder="destination city" required /> </br>
-    <input type="text" name="des_airport" placeholder="destination airport" required /></br>
-    <head>Departure date:</head>
-    <input type="date" name="departure_date" placeholder="departure date" required /></br>
-    <input type="submit" value=Search />
-    {% if error1 %}
-        <p class="error1"><strong>Error:</strong> {{error1}}</p>
-    {% endif %}
+<body>
+    <style type="text/css">
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+    </style>
+    <h1>Welcome {{username}}</h1>
+    <br></br>
+    <p>Your Future Flight</p>
     <table>
         <th>Flight Number</th>
-        <th>Departure Date</th>
+        <th>Departure Time</th>
         <th>Airline Name</th>
-        {% for line in Search_flight %}
+        {% for line in future_flight %}
         <tr>
             <td>{{line['flight_number']}}</td>
-            <td>{{line['departure_date']}}</td>
+            <td>{{line['departure_date_time']}}</td>
             <td>{{line['airline_name']}}</td>
         </tr>
         {% endfor %}
     </table>
-</form>
 
-<br></br>
-<p>Buy Tickets</p>
-<form action="/buy_ticket" method="POST">
-    <input type="text" name="flight_number" placeholder="flight number" required /> </br>
-    <input type="text" name="airline_name" placeholder="airline name" required /></br>
-    <head>Departure date and time:</head>
-    <!--- 特殊的date type--->
-    <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
-    <head>Type of your card:</head>
-    <div>
-    <input type="radio" id="credit" name="card" value="credit"checked>
-    <label for="credit">Credit Card</label>
-    </div>
-    <div>
-    <input type="radio" id="debit" name="card" value="debit">
-    <label for="debit">Debit Card</label>
-    </div>
-    <input type="text" name="name_on_card" placeholder="name on card" required /> </br>
-    <!--- sql 里 是 varchar--->
-    <input type="int" name="card_num" placeholder="number of card" required /></br>
-    <head>Expiration date of card:</head>
-    <input type="date" name="expiration_date" placeholder="expiration date" required /></br>
-    <input type="submit" value=Submit />
-    {% if error2 %}
+    <br></br>
+    <p>Search Flights</p>
+    <form action="/flight_search_home" method="POST">
+        <input type="text" name="source_city" placeholder="source_city" required /> </br>
+        <input type="text" name="source_airport" placeholder="source airport" required /></br>
+        <input type="text" name="des_city" placeholder="destination city" required /> </br>
+        <input type="text" name="des_airport" placeholder="destination airport" required /></br>
+
+        <head>Departure date:</head>
+        <input type="date" name="departure_date" placeholder="departure date" required /></br>
+        <input type="submit" value=Search />
+        {% if error1 %}
+        <p class="error1"><strong>Error:</strong> {{error1}}</p>
+        {% endif %}
+        <table>
+            <th>Flight Number</th>
+            <th>Departure Date</th>
+            <th>Airline Name</th>
+            {% for line in Search_flight %}
+            <tr>
+                <td>{{line['flight_number']}}</td>
+                <td>{{line['departure_date']}}</td>
+                <td>{{line['airline_name']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </form>
+
+    <br></br>
+    <p>Buy Tickets</p>
+    <form action="/buy_ticket" method="POST">
+        <input type="text" name="flight_number" placeholder="flight number" required /> </br>
+        <input type="text" name="airline_name" placeholder="airline name" required /></br>
+
+        <head>Departure date and time:</head>
+        <!--- 特殊的date type--->
+        <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
+
+        <head>Type of your card:</head>
+        <div>
+            <input type="radio" id="credit" name="card" value="credit" checked>
+            <label for="credit">Credit Card</label>
+        </div>
+        <div>
+            <input type="radio" id="debit" name="card" value="debit">
+            <label for="debit">Debit Card</label>
+        </div>
+        <input type="text" name="name_on_card" placeholder="name on card" required /> </br>
+        <!--- sql 里 是 varchar--->
+        <input type="int" name="card_num" placeholder="number of card" required /></br>
+
+        <head>Expiration date of card:</head>
+        <input type="date" name="expiration_date" placeholder="expiration date" required /></br>
+        <input type="submit" value=Submit />
+        {% if error2 %}
         <p class="error2"><strong>Error:</strong> {{error2}}</p>
-    {% endif %}
-</form>
+        {% endif %}
+    </form>
+
+    <br></br>
+    <p>Flight information that not commented yet</p>
+    <table>
+        <th>Flight Number</th>
+        <th>Departure Time</th>
+        <th>Airline Name</th>
+        {% for line in not_commented_flights %}
+        <tr>
+            <td>{{line['flight_number']}}</td>
+            <td>{{line['departure_date_time']}}</td>
+            <td>{{line['airline_name']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br></br>
+    <p>Comments and Rating for Flights</p>
+    <form action="/comment_and_rate" method="POST">
+        <input type="text" name="flight_number" placeholder="flight number" required /> </br>
+        <input type="text" name="airline_name" placeholder="airline name" required /></br>
+
+        <head>Departure date and time:</head>
+        <!--- 特殊的date type--->
+        <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
+        <br></br>
+
+        <head>Your Rating:</head>
+        <br></br>
+        <input type="radio" id="0.0" name="rate" value="0.0" checked>
+        <label for="0.0">0.0</label>
+        <input type="radio" id="0.5" name="rate" value="0.5" checked>
+        <label for="0.5">0.5</label>
+        <input type="radio" id="1.0" name="rate" value="1.0" checked>
+        <label for="1.0">1.0</label>
+        <input type="radio" id="1.5" name="rate" value="1.5" checked>
+        <label for="1.5">1.5</label>
+        <input type="radio" id="2.0" name="rate" value="2.0" checked>
+        <label for="2.0">2.0</label>
+        <input type="radio" id="2.5" name="rate" value="2.5" checked>
+        <label for="2.5">2.5</label>
+        <input type="radio" id="3.0" name="rate" value="3.0" checked>
+        <label for="3.0">3.0</label>
+        <input type="radio" id="3.5" name="rate" value="3.5" checked>
+        <label for="3.5">3.5</label>
+        <input type="radio" id="4.0" name="rate" value="4.0" checked>
+        <label for="4.0">4.0</label>
+        <input type="radio" id="4.5" name="rate" value="4.5" checked>
+        <label for="4.5">4.5</label>
+        <input type="radio" id="5.0" name="rate" value="5.0" checked>
+        <label for="5.0">5.0</label>
+        <br></br>
+        <textarea name="comment" rows="10" cols="40">
+    Your comments
+    </textarea>
+        <input type="submit" value=Submit />
+        {% if error3 %}
+        <p class="error3"><strong>Error:</strong> {{error3}}</p>
+        {% endif %}
+    </form>
 
 
-<!--- 买票 需要有下拉菜单（根据python定）--->
-<!--- 不确定怎么implement--->
-<p>Comments and Rating for Previous Flights</p>
-
-<a href="/logout">Logout</a>
+    <a href="/logout">Logout</a>
 
 </body>
 

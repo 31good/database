@@ -142,8 +142,14 @@ def customer_home():
             "WHERE email = %s ORDER BY departure_date_time DESC"
     cursor.execute(query, (username))
     data1 = cursor.fetchall()
+    #TODO: 时间要now之前
+    query = "SELECT flight_number,departure_date_time,airline_name " \
+            "FROM buy natural join ticket natural join flight " \
+            "WHERE email = %s and flight_number not in (SELECT flight_number FROM rate WHERE email = %s) ORDER BY departure_date_time DESC"
+    cursor.execute((query,(username,username)))
+    data2 = cursor.fetall()
     cursor.close()
-    return render_template('customer_home.html', username=username, future_flight=data1)
+    return render_template('customer_home.html', username=username, future_flight=data1,not_commented_flights=data2)
 
 #TODO
 @app.route('/buy_ticket', methods=['GET', 'POST'])
@@ -176,7 +182,41 @@ def buy_ticket():
     #TODO: cursor.execute(query, (ticket_id,username,now,name_on_card,card_num,card_type,expir_date))
     data1 = cursor.fetchall()
     cursor.close()
-    return render_template('customer_home.html', username=username)
+    return render_template('customer_home.html', username=username,error="Successful buy tickets")
+
+@app.route('/comment_and_rate', methods=['GET', 'POST'])
+def comment_and_rate():
+    username = session['username']
+    flight_number=request.form["flight_number"]
+    airline_name = request.form["airline_name"]
+    #TODO:转换格式
+    dep_date = request.form["departure_date"]
+    comment = request.form["comment"]
+    #TODO: 有可能是str的形式 sql里是numeric(2,1)
+    rate = request.form["rate"]
+    cursor = conn.cursor()
+    query = "SELECT flight_number,departure_date_time,airline_name " \
+            "FROM flight" \
+            "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
+    cursor.execute(query, (flight_number,airline_name,dep_date))
+    data=cursor.fetchall()
+    if(not data):
+        error="Please check the flight information"
+        return render_template('customer_home.html', username=username, error3=error)
+    query = "SELECT flight_number,departure_date_time,airline_name " \
+            "FROM rate" \
+            "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s and email=%s"
+    cursor.execute(query, (flight_number,airline_name,dep_date,username))
+    data = cursor.fetchall()
+    if(data):
+        error="You have already commented or rated this flight"
+        return render_template('customer_home.html', username=username, error3=error)
+    query = 'INSERT INTO rate VALUES(%s,%s,%s,%s,%s,%s)'
+    cursor.execute(query, (username,airline_name,dep_date,flight_number,rate,comment))
+    cursor.close()
+    return render_template('customer_home.html', username=username,error3="Successful rate and commented")
+
+
 
 
 @app.route('/staff_home')

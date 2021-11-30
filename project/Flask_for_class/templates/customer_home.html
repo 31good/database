@@ -49,6 +49,36 @@
         {% endfor %}
     </table>
 </form>
+
+<br></br>
+<p>Buy Tickets</p>
+<form action="/buy_ticket" method="POST">
+    <input type="text" name="flight_number" placeholder="flight number" required /> </br>
+    <input type="text" name="airline_name" placeholder="airline name" required /></br>
+    <head>Departure date and time:</head>
+    <!--- 特殊的date type--->
+    <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
+    <head>Type of your card:</head>
+    <div>
+    <input type="radio" id="credit" name="card" value="credit"checked>
+    <label for="credit">Credit Card</label>
+    </div>
+    <div>
+    <input type="radio" id="debit" name="card" value="debit">
+    <label for="debit">Debit Card</label>
+    </div>
+    <input type="text" name="name_on_card" placeholder="name on card" required /> </br>
+    <!--- sql 里 是 varchar--->
+    <input type="int" name="card_num" placeholder="number of card" required /></br>
+    <head>Expiration date of card:</head>
+    <input type="date" name="expiration_date" placeholder="expiration date" required /></br>
+    <input type="submit" value=Submit />
+    {% if error2 %}
+        <p class="error2"><strong>Error:</strong> {{error2}}</p>
+    {% endif %}
+</form>
+
+
 <!--- 买票 需要有下拉菜单（根据python定）--->
 <!--- 不确定怎么implement--->
 <p>Comments and Rating for Previous Flights</p>

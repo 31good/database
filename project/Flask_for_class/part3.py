@@ -145,6 +145,39 @@ def customer_home():
     cursor.close()
     return render_template('customer_home.html', username=username, future_flight=data1)
 
+#TODO
+@app.route('/buy_ticket', methods=['GET', 'POST'])
+def buy_ticket():
+    username = session['username']
+    card_type = request.form["card"]
+    if(not card_type):
+        error="Please check the box for card type"
+        return render_template('customer_home.html', username=username, error2=error)
+    flight_number=request.form["flight_number"]
+    airline_name = request.form["airline_name"]
+    #TODO:转换格式
+    dep_date = request.form["departure_date"]
+    name_on_card = request.form["name_on_card"]
+    card_num = request.form["card_num"]
+    expir_date = request.form["expiration_date"]
+    cursor = conn.cursor()
+    ##TODO: 怎么找到future
+    query = "SELECT flight_number,departure_date_time,airline_name " \
+            "FROM flight" \
+            "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
+    cursor.execute(query, (flight_number,airline_name,dep_date))
+    data=cursor.fetchall()
+    if(not data):
+        error="Please check the flight information"
+        return render_template('customer_home.html', username=username, error2=error)
+    #TODO: 查找座位id，算座位和价钱的逻辑
+    query = 'INSERT INTO buy VALUES(%s,%s,%s,%s,%s,%s,%s)'
+    #TODO：当前时间的计算，通过python或者sql
+    #TODO: cursor.execute(query, (ticket_id,username,now,name_on_card,card_num,card_type,expir_date))
+    data1 = cursor.fetchall()
+    cursor.close()
+    return render_template('customer_home.html', username=username)
+
 
 @app.route('/staff_home')
 def staff_home():

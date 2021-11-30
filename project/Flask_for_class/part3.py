@@ -142,26 +142,27 @@ def customer_home():
             "WHERE email = %s ORDER BY departure_date_time DESC"
     cursor.execute(query, (username))
     data1 = cursor.fetchall()
-    #TODO: 时间要now之前
+    # TODO: 时间要now之前
     query = "SELECT flight_number,departure_date_time,airline_name " \
             "FROM buy natural join ticket natural join flight " \
             "WHERE email = %s and flight_number not in (SELECT flight_number FROM rate WHERE email = %s) ORDER BY departure_date_time DESC"
-    cursor.execute((query,(username,username)))
+    cursor.execute((query, (username, username)))
     data2 = cursor.fetall()
     cursor.close()
-    return render_template('customer_home.html', username=username, future_flight=data1,not_commented_flights=data2)
+    return render_template('customer_home.html', username=username, future_flight=data1, not_commented_flights=data2)
 
-#TODO
+
+# TODO
 @app.route('/buy_ticket', methods=['GET', 'POST'])
 def buy_ticket():
     username = session['username']
     card_type = request.form["card"]
-    if(not card_type):
-        error="Please check the box for card type"
+    if (not card_type):
+        error = "Please check the box for card type"
         return render_template('customer_home.html', username=username, error2=error)
-    flight_number=request.form["flight_number"]
+    flight_number = request.form["flight_number"]
     airline_name = request.form["airline_name"]
-    #TODO:转换格式
+    # TODO:转换格式
     dep_date = request.form["departure_date"]
     name_on_card = request.form["name_on_card"]
     card_num = request.form["card_num"]
@@ -171,58 +172,58 @@ def buy_ticket():
     query = "SELECT flight_number,departure_date_time,airline_name " \
             "FROM flight" \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
-    cursor.execute(query, (flight_number,airline_name,dep_date))
-    data=cursor.fetchall()
-    if(not data):
-        error="Please check the flight information"
+    cursor.execute(query, (flight_number, airline_name, dep_date))
+    data = cursor.fetchall()
+    if (not data):
+        error = "Please check the flight information"
         return render_template('customer_home.html', username=username, error2=error)
-    #TODO: 查找座位id，算座位和价钱的逻辑
+    # TODO: 查找座位id，算座位和价钱的逻辑
     query = 'INSERT INTO buy VALUES(%s,%s,%s,%s,%s,%s,%s)'
-    #TODO：当前时间的计算，通过python或者sql
-    #TODO: cursor.execute(query, (ticket_id,username,now,name_on_card,card_num,card_type,expir_date))
+    # TODO：当前时间的计算，通过python或者sql
+    # TODO: cursor.execute(query, (ticket_id,username,now,name_on_card,card_num,card_type,expir_date))
     data1 = cursor.fetchall()
     cursor.close()
-    return render_template('customer_home.html', username=username,error="Successful buy tickets")
+    return render_template('customer_home.html', username=username, error="Successful buy tickets")
+
 
 @app.route('/comment_and_rate', methods=['GET', 'POST'])
 def comment_and_rate():
     username = session['username']
-    flight_number=request.form["flight_number"]
+    flight_number = request.form["flight_number"]
     airline_name = request.form["airline_name"]
-    #TODO:转换格式
+    # TODO:转换格式
     dep_date = request.form["departure_date"]
     comment = request.form["comment"]
-    #TODO: 有可能是str的形式 sql里是numeric(2,1)
+    # TODO: 有可能是str的形式 sql里是numeric(2,1)
     rate = request.form["rate"]
     cursor = conn.cursor()
     query = "SELECT flight_number,departure_date_time,airline_name " \
             "FROM flight" \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
-    cursor.execute(query, (flight_number,airline_name,dep_date))
-    data=cursor.fetchall()
-    if(not data):
-        error="Please check the flight information"
+    cursor.execute(query, (flight_number, airline_name, dep_date))
+    data = cursor.fetchall()
+    if (not data):
+        error = "Please check the flight information"
         return render_template('customer_home.html', username=username, error3=error)
     query = "SELECT flight_number,departure_date_time,airline_name " \
             "FROM rate" \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s and email=%s"
-    cursor.execute(query, (flight_number,airline_name,dep_date,username))
+    cursor.execute(query, (flight_number, airline_name, dep_date, username))
     data = cursor.fetchall()
-    if(data):
-        error="You have already commented or rated this flight"
+    if (data):
+        error = "You have already commented or rated this flight"
         return render_template('customer_home.html', username=username, error3=error)
     query = 'INSERT INTO rate VALUES(%s,%s,%s,%s,%s,%s)'
-    cursor.execute(query, (username,airline_name,dep_date,flight_number,rate,comment))
+    cursor.execute(query, (username, airline_name, dep_date, flight_number, rate, comment))
     cursor.close()
-    return render_template('customer_home.html', username=username,error3="Successful rate and commented")
-
-
+    return render_template('customer_home.html', username=username, error3="Successful rate and commented")
 
 
 @app.route('/staff_home')
 def staff_home():
     username = session['username']
     cursor = conn.cursor()
+    # TODO: 接下来30天的
     query = "SELECT flight_number,departure_date_time,airline_name " \
             "FROM staff natural join airline natural join flight " \
             "WHERE username = %s ORDER BY departure_date_time DESC"
@@ -245,18 +246,18 @@ def create_new_airport():
     error = None
     if (not data):
         error = "No authentication for this action"
-        return render_template('staff_home.html', error1=error)
+        return render_template('staff_home.html', error2=error)
     else:
         query = 'SELECT * FROM airport WHERE code = %s'
         cursor.execute(query, (code))
         data = cursor.fetchone()
         if (data):
             error = "That code for airport has already existed"
-            return render_template('staff_home.html', error1=error)
+            return render_template('staff_home.html', error2=error)
         else:
             query = 'INSERT INTO airport VALUES(%s,%s,%s)'
             cursor.execute(query, (code, airport_name, city))
-        return render_template("staff_home.html")
+        return render_template("staff_home.html", error2="Successful added Airport")
 
 
 @app.route('/create_new_airplane', methods=['GET', 'POST'])
@@ -272,25 +273,55 @@ def create_new_airplane():
     error = None
     if (not data):
         error = "No authentication for this action"
-        return render_template('staff_home.html', error2=error)
+        return render_template('staff_home.html', error3=error)
     else:
         query = 'SELECT * FROM airline WHERE airline_name = %s'
         cursor.execute(query, (airline_name))
         data = cursor.fetchone()
         if (not data):
             error = "That airline does not exist"
-            return render_template('staff_home.html', error2=error)
+            return render_template('staff_home.html', error3=error)
         else:
             query = 'SELECT * FROM airplane WHERE airline_name = %s and airplane_id = %s'
             cursor.execute(query, (airline_name, id))
             data = cursor.fetchone()
             if (data):
-                error = "That code of airplane has already existed"
-                return render_template('staff_home.html', error2=error)
+                error = "That code of airplane has already existed for that airline"
+                return render_template('staff_home.html', error3=error)
             else:
                 query = 'INSERT INTO airplane VALUES(%s,%s,%s)'
                 cursor.execute(query, (airline_name, id, num_seats))
-                return render_template("staff_home.html")
+                return render_template("staff_home.html", error3="Successful added airplane")
+
+
+@app.route('/find_customer', methods=['GET', 'POST'])
+def find_customer():
+    username = session["username"]
+    flight_number = request.form['flight_number']
+    airline_name = request.form['airline_name']
+    dep_date = request.form["departure_date"]
+    cursor = conn.cursor()
+    query = 'SELECT * FROM staff WHERE username = %s'
+    cursor.execute(query, (username))
+    data = cursor.fetchone()
+    if (not data):
+        error = "No authentication for this action"
+        return render_template('staff_home.html', error1=error)
+    query = "SELECT flight_number,departure_date_time,airline_name " \
+            "FROM flight" \
+            "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
+    cursor.execute(query, (flight_number, airline_name, dep_date))
+    data = cursor.fetchall()
+    if (not data):
+        error = "Please check the flight information"
+        return render_template('staff_home.html', username=username, error1=error)
+
+    query = "SELECT name, phone_number" \
+            "FROM customer natural join buy natural join ticket natural join flight" \
+            "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
+    cursor.execute(query, (flight_number, airline_name, dep_date))
+    data = cursor.fetchone()
+    return render_template("staff_home.html", customers=data)
 
 
 # Authenticates the login

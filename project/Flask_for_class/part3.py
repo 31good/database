@@ -49,18 +49,33 @@ def register_customer():
 @app.route('/flight_search', methods=['GET', 'POST'])
 def flight_search():
     # TODO: check
+    trip_type = request.form['trip_type']
     source_city = request.form['source_city']
     source_airport = request.form['source_airport']
     des_city = request.form['des_city']
     des_airport = request.form['des_airport']
     date = request.form["departure_date"]
+    return_date = request.form["return_date"]
     cursor = conn.cursor()
-    query = 'SELECT b.flight_number, b.departure_date, b.airline_name ' \
-            'FROM Airport as a join (select flight_number, date(departure_date_time) ' \
-            'as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
-            'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
-            'and a.name=%s and c.city=%s and c.name=%s and b.departure_date = %s'
-    cursor.execute(query, (source_city, source_airport, des_city, des_airport, date))
+    if trip_type == "round":
+        query = "SELECT e.flight_number, date(e.departure_date_time) as departure_date, e.airline_name, f.flight_number" \
+                " as return_flight_number, date(f.departure_date_time) as return_date, f.airline_name as return_airline_name " \
+                "from(SELECT b.flight_number, b.departure_date_time, b.airline_name, arrival_date_time FROM Airport as a join " \
+                "(select flight_number, departure_date_time, airline_name, depart_airport_code,arrival_date_time, arrive_airport_code " \
+                "from Flight)as b on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s and" \
+                "a.name=%s and c.city=%s and c.name=%s and date(b.departure_date) = %s)e inner join(SELECT b.flight_number, b.departure_date_time, " \
+                "b.airline_name FROM Airport as a join (select flight_number, departure_date_time, airline_name, depart_airport_code, " \
+                "arrive_airport_code from Flight)as b on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code " \
+                "WHERE a.city= %s and a.name=%s and c.city=%s and c.name=%s and date(b.departure_date) = %s)f " \
+                "on e.arrival_date_time < f.departure_date_time"
+        cursor.execute(query, (source_city, source_airport, des_city, des_airport, date, source_city, source_airport, des_city, des_airport, return_date))
+    else:
+        query = 'SELECT b.flight_number, b.departure_date, b.airline_name, ''as return_flight_number, '' as return_date, ''as return_airline_name ' \
+                'FROM Airport as a join (select flight_number, date(departure_date_time) ' \
+                'as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
+                'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
+                'and a.name=%s and c.city=%s and c.name=%s and b.departure_date = %s'
+        cursor.execute(query, (source_city, source_airport, des_city, des_airport, date))
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"

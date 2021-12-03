@@ -11,12 +11,20 @@
 	<br></br>
 	<p> Search Flight:</p>
 	<form action="/flight_search" method="POST">
+        <label>Single Trip</label>
+        <input type="radio" name="trip_type" value = "single" checked = "checked" />
+        <label>Round trip</label>
+        <input type="radio" name="trip_type" value = "round" /></br>
 		<input type="text" name="source_city" placeholder="source_city" required /> </br>
 		<input type="text" name="source_airport" placeholder="source airport" required /></br>
 		<input type="text" name="des_city" placeholder="destination city" required /> </br>
 		<input type="text" name="des_airport" placeholder="destination airport" required /></br>
 		<head>Departure date:</head>
 		<input type="date" name="departure_date" placeholder="departure date" required /></br>
+		<head>Return Date</head>
+		<input type="date" name="return_date" placeholder="return date" required />
+		<head>(Round trip only)</head>
+		</br>
 		<input type="submit" value=Search />
 		{% if error %}
 			<p class="error1"><strong>Error:</strong> {{error}}</p>
@@ -32,11 +40,17 @@
 			<th>Flight Number</th>
 			<th>Departure Date</th>
 			<th>Airline Name</th>
+			<th>Return Flight Number(Round Trip Only)</th>
+			<th>Return Date(Round Trip Only)</th>
+			<th>Return Airline Name(Round Trip Only)</th>
 			{% for line in posts1 %}
 			<tr>
 				<td>{{line['flight_number']}}</td>
 				<td>{{line['departure_date']}}</td>
 				<td>{{line['airline_name']}}</td>
+				<td>{{line['return_flight_number']}}</td>
+				<td>{{line['return_date']}}</td>
+				<td>{{line['return_airline_name']}}</td>
 			</tr>
 			{% endfor %}
 		</table>

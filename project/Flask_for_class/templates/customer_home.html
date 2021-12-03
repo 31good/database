@@ -13,19 +13,33 @@
     </style>
     <h1>Welcome {{username}}</h1>
     <br></br>
-    <p>Your Future Flight</p>
-    <table>
+    <p>Checking Flights</p>
+    <form name = "iForm" action = "/customer_home/0" method = "POST">
+        <label>Past</label>
+        <input type="radio" name="flight_type" value = "Past" checked = "checked" />
+        <label>Future</label>
+        <input type="radio" name="flight_type" value = "Future" />
+        <label>All</label>
+        <input type="radio" name="flight_type" value = "All" />
+        </br>
+        <input type="submit" value=Search />
+        {% if error1 %}
+        <p class="error1"><strong>Error:</strong> {{error1}}</p>
+        {% endif %}
+        <header>Your {{flight_type}} Flight</header>
+        <table>
         <th>Flight Number</th>
         <th>Departure Time</th>
         <th>Airline Name</th>
         {% for line in future_flight %}
         <tr>
             <td>{{line['flight_number']}}</td>
-            <td>{{line['departure_date_time']}}</td>
+            <td>{{line['dep']}}</td>
             <td>{{line['airline_name']}}</td>
         </tr>
         {% endfor %}
-    </table>
+        </table>
+    </form>
 
     <br></br>
     <p>Search Flights</p>

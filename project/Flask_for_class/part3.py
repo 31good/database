@@ -124,32 +124,30 @@ def See_status():
     return render_template("index.html", posts2=data)
 
 
-@app.route('/customer_home')
-def customer_home():
+@app.route('/customer_home/<int:if_initial>', methods=['GET', 'POST'])
+def customer_home(if_initial):
     username = session['username']
     cursor = conn.cursor()
-    current_time = datetime.datetime.now()
-    current_time = current_time.strftime("%Y-%m-%d")
-    print(current_time)
-    """query = 'SELECT flight_number, date(departure_date_time) as departure,airline_name ' \
-            'FROM customer natural join buy natural join ticket natural join flight'\
-            'WHERE email = %s and departure>=%s' \
-            'ORDER BY departure_date_time DESC'
-    cursor.execute(query, (username,current_time))"""
-    ##TODO: 怎么找到future
-    query = "SELECT flight_number,date(departure_date_time) as dep,airline_name " \
-            "FROM customer natural join buy natural join ticket natural join flight " \
-            "WHERE email = %s ORDER BY departure_date_time DESC"
+    if if_initial == 0:
+        flight_type = request.form['flight_type']
+    else:
+        flight_type = "Future"
+    if flight_type == "All":
+        query = "SELECT flight_number,departure_date_time as dep,airline_name " \
+                "FROM customer natural join buy natural join ticket " \
+                "WHERE email = %s ORDER BY departure_date_time DESC"
+    elif flight_type == "Past":
+        query = "SELECT flight_number,departure_date_time as dep,airline_name " \
+                "FROM customer natural join buy natural join ticket " \
+                "WHERE email = %s and departure_date_time < now() ORDER BY departure_date_time DESC"
+    else:
+        query = "SELECT flight_number,departure_date_time as dep,airline_name " \
+                "FROM customer natural join buy natural join ticket " \
+                "WHERE email = %s and departure_date_time >= now() ORDER BY departure_date_time DESC"
     cursor.execute(query, (username))
     data1 = cursor.fetchall()
-    # TODO: 时间要now之前
-    query = "SELECT flight_number,departure_date_time,airline_name " \
-            "FROM buy natural join ticket natural join flight " \
-            "WHERE email = %s and flight_number not in (SELECT flight_number FROM rate WHERE email = %s) ORDER BY departure_date_time DESC"
-    cursor.execute((query, (username, username)))
-    data2 = cursor.fetall()
     cursor.close()
-    return render_template('customer_home.html', username=username, future_flight=data1, not_commented_flights=data2)
+    return render_template('customer_home.html', username=username, future_flight=data1, flight_type = flight_type)
 
 
 # TODO
@@ -357,7 +355,7 @@ def loginAuth():
             return redirect(url_for('staff_home'))
         else:
             # TODO: homepage build for customer
-            return redirect(url_for('customer_home'))
+            return redirect(url_for('customer_home', if_initial = 1))
     else:
         # returns an error message to the html page
         error = 'Invalid login or username'

@@ -13,6 +13,9 @@
     </style>
     <h1>Welcome {{username}}</h1>
     <br></br>
+    {% if success %}
+    <p class="success" style="color:green"> {{success}}</p>
+    {% endif %}
     <p>Checking Flights</p>
     <form name = "iForm" action = "/customer_home/0" method = "POST">
         <label>Past</label>
@@ -24,7 +27,7 @@
         </br>
         <input type="submit" value=Search />
         {% if error1 %}
-        <p class="error1"><strong>Error:</strong> {{error1}}</p>
+        <p class="error1" style="color:red"><strong>Error:</strong> {{error1}}</p>
         {% endif %}
         <header>Your {{flight_type}} Flight</header>
         <table>
@@ -53,7 +56,7 @@
         <input type="date" name="departure_date" placeholder="departure date" required /></br>
         <input type="submit" value=Search />
         {% if error1 %}
-        <p class="error1"><strong>Error:</strong> {{error1}}</p>
+        <p class="error1" style="color:red"><strong>Error:</strong> {{error1}}</p>
         {% endif %}
         <table>
             <th>Flight Number</th>
@@ -96,7 +99,7 @@
         <input type="date" name="expiration_date" placeholder="expiration date" required /></br>
         <input type="submit" value=Submit />
         {% if error2 %}
-        <p class="error2"><strong>Error:</strong> {{error2}}</p>
+        <p class="error2" style="color:red"><strong>Error:</strong> {{error2}}</p>
         {% endif %}
     </form>
 
@@ -155,10 +158,33 @@
     </textarea>
         <input type="submit" value=Submit />
         {% if error3 %}
-        <p class="error3"><strong>Error:</strong> {{error3}}</p>
+        <p class="error3" style="color:red"><strong>Error:</strong> {{error3}}</p>
         {% endif %}
     </form>
-    <!--- Track My spending 还没做--->
+    <!--- TODO--->
+    <br></br>
+    <p>Track my spending:</p>
+    <form action="/track_spending" method="POST">
+        <head>Start date:</head>
+        <input type="date" name="start_date" placeholder="start_date" required /></br>
+        <head>End date:</head>
+        <input type="date" name="end_date" placeholder="end_date" required /></br>
+        <input type="submit" value=Search />
+        {% if error4 %}
+        <p class="error4" style="color:red"><strong>Error:</strong> {{error4}}</p>
+        {% endif %}
+    </form>
+    <table>
+        <th>Month</th>
+        <th>Spending</th>
+        {% for line in track_spend %}
+        <tr>
+            <!--- TODO--->
+            <td>{{line["rating"]}}</td>
+            <td>{{line["comment"]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
     <a href="/logout">Logout</a>
 

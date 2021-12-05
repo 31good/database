@@ -118,7 +118,6 @@ def See_status():
     flight_number = request.form['flight_number']
     arrival_date = request.form['arrival_date']
     departure_date = request.form['departure_date']
-    # TODO: 格式不对
     # time_format = '%Y-%m-%dT%H:%M:%S'
     # arrival_date=time.strptime(arrival_date+":00",time_format)
     # departure_date=time.strptime(departure_date+":00",time_format)
@@ -176,16 +175,14 @@ def buy_ticket():
         return render_template('customer_home.html', username=username, error2=error)
     flight_number = request.form["flight_number"]
     airline_name = request.form["airline_name"]
-    # TODO:转换格式
     dep_date = request.form["departure_date"]
     name_on_card = request.form["name_on_card"]
     card_num = request.form["card_num"]
     expir_date = request.form["expiration_date"]
     cursor = conn.cursor()
+    dep_date=dep_date.replace("T"," ")+":00"
     ##TODO: 怎么找到future
-    query = "SELECT flight_number,departure_date_time,airline_name " \
-            "FROM flight" \
-            "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
+    query = "SELECT flight_number,departure_date_time,airline_name FROM flight WHERE flight_number= %s and airline_name = %s and departure_date_time = %s"
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()
     if (not data):
@@ -205,8 +202,8 @@ def comment_and_rate():
     username = session['username']
     flight_number = request.form["flight_number"]
     airline_name = request.form["airline_name"]
-    # TODO:转换格式
     dep_date = request.form["departure_date"]
+    dep_date=dep_date.replace("T"," ")+":00"
     comment = request.form["comment"]
     # TODO: 有可能是str的形式 sql里是numeric(2,1)
     rate = request.form["rate"]
@@ -232,6 +229,11 @@ def comment_and_rate():
     cursor.close()
     return render_template('customer_home.html', username=username, success="Successful rate and commented")
 
+@app.route('/track_spending', methods=['GET', 'POST'])
+def track_spending():
+    username=session["username"]
+    start_date=request.form["start_date"]
+    end_date=request.form["end_date"]
 
 # TODO: check
 def get_airline_name():
@@ -390,7 +392,9 @@ def create_new_flights():
     flight_number = request.form['flight_number']
     airline_name = get_airline_name()
     dep_date = request.form["departure_date"]
+    dep_date=dep_date.replace("T"," ")+":00"
     arrival_date = request.form["arrival_date"]
+    arrival_date=arrival_date.replace("T"," ")+":00"
     base_price = request.form['base_price']
     airplane_id = request.form['airplane_id']
     depart_airport_code = request.form["depart_airport_code"]
@@ -438,6 +442,7 @@ def change_status():
     flight_number = request.form['flight_number']
     airline_name = get_airline_name()
     dep_date = request.form["departure_date"]
+    dep_date=dep_date.replace("T"," ")+":00"
     status = request.form["status"]
     cursor = conn.cursor()
     query = 'SELECT * FROM staff WHERE username = %s'
@@ -472,38 +477,40 @@ def view_reports():
     if (not data):
         error = "No authentication for this action"
         return render_template('staff_home.html', error6=error)
-    #TODO: 每个月的!!!!
+    # TODO: 每个月的!!!!
+
 
 @app.route('/view_rating', methods=['GET', 'POST'])
 def view_rating():
-    error=Auth_staff()
-    if(error!=None):
-        return render_template("staff_home.html",error7=error)
+    error = Auth_staff()
+    if (error != None):
+        return render_template("staff_home.html", error7=error)
     flight_number = request.form['flight_number']
     airline_name = get_airline_name()
     dep_date = request.form["departure_date"]
+    dep_date=dep_date.replace("T"," ")+":00"
     cursor = conn.cursor()
     query = 'SELECT avg(rating) FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s'
-    cursor.execute(query, (flight_number,airline_name,dep_date))
-    avg=cursor.fetchone()[0]
-    query="SELECT rate, comment FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s"
     cursor.execute(query, (flight_number, airline_name, dep_date))
-    data=cursor.fetchall()
-    return render_template("staff_home.html",average=avg,rating_comment=data)
+    avg = cursor.fetchone()[0]
+    query = "SELECT rate, comment FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s"
+    cursor.execute(query, (flight_number, airline_name, dep_date))
+    data = cursor.fetchall()
+    return render_template("staff_home.html", average=avg, rating_comment=data)
 
 
-
-#TODO: 放到每个的最开始
+# TODO: 放到每个的最开始
 def Auth_staff():
     username = session["username"]
     cursor = conn.cursor()
     query = 'SELECT * FROM staff WHERE username = %s'
     cursor.execute(query, (username))
     data = cursor.fetchone()
-    error=None
-    if(not data): error ="No authentication for this action"
+    error = None
+    if (not data): error = "No authentication for this action"
     cursor.close()
     return error
+
 
 # Authenticates the login
 @app.route('/loginAuth', methods=['GET', 'POST'])

@@ -14,7 +14,7 @@
     <h1>Welcome {{username}}</h1>
     <br></br>
     {% if success %}
-    <p class="success"> {{success}}</p>
+    <p class="success" style="color:green"> {{success}}</p>
     {% endif %}
     <br></br>
     <p>Future Flights in 30 days</p>
@@ -44,7 +44,7 @@
         <input type="radio" name="status" value="Ontime" />
         <input type="submit" value=Change />
         {% if error5 %}
-        <p class="error5"><strong>Error:</strong> {{error5}}</p>
+        <p class="error5" style="color:red"><strong>Error:</strong> {{error5}}</p>
         {% endif %}
     </form>
 
@@ -74,7 +74,7 @@
         <input type="text" name="city" placeholder="city" required /> </br>
         <input type="submit" value=Add />
         {% if error2 %}
-        <p class="error2"><strong>Error:</strong> {{error2}}</p>
+        <p class="error2" style="color:red"><strong>Error:</strong> {{error2}}</p>
         {% endif %}
     </form>
 
@@ -97,7 +97,7 @@
         <input type="int" name="num_seats" placeholder="number of seats" required /> </br>
         <input type="submit" value=Add />
         {% if error3 %}
-        <p class="error3"><strong>Error:</strong> {{error3}}</p>
+        <p class="error3" style="color:red"><strong>Error:</strong> {{error3}}</p>
         {% endif %}
     </form>
 
@@ -120,7 +120,7 @@
         <input type="int" name="arrive_airport_code" placeholder="arrive airport code" required /> </br>
         <input type="submit" value=Add />
         {% if error4 %}
-        <p class="error4"><strong>Error:</strong> {{error4}}</p>
+        <p class="error4" style="color:red"><strong>Error:</strong> {{error4}}</p>
         {% endif %}
     </form>
 
@@ -178,7 +178,7 @@
         <input type="date" name="end_date" placeholder="end_date" required /></br>
         <input type="submit" value=Search />
         {% if error6 %}
-        <p class="error6"><strong>Error:</strong> {{error6}}</p>
+        <p class="error6" style="color:red"><strong>Error:</strong> {{error6}}</p>
         {% endif %}
     </form>
     <!--- 怎么monthwise--->
@@ -201,7 +201,7 @@
         <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
         <input type="submit" value=Search />
         {% if error7 %}
-        <p class="error7"><strong>Error:</strong> {{error7}}</p>
+        <p class="error7" style="color:red"><strong>Error:</strong> {{error7}}</p>
         {% endif %}
     </form>
     <!--- 怎么monthwise--->

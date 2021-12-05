@@ -310,10 +310,10 @@ def staff_home():
     query = "SELECT count(*) as count, email AS count FROM buy GROUP BY email ORDER BY count DESC LIMIT 1"
     cursor.execute(query)
     email = cursor.fechall()["email"]
-    query = "SELECT flight_number, departure_date_time, airline_name" \
+    query = "SELECT flight_number, departure_date_time" \
             "FROM buy natural join ticket " \
-            "WHERE email = %s"
-    cursor.execute(query, (email))
+            "WHERE email = %s and airline_name=%s"
+    cursor.execute(query, (email,airline))
     data6 = cursor.fetchall()
     query = "SELECT id,num_seats FROM airplane WHERE airline_name =%s"
     cursor.execute(query, (email))
@@ -507,6 +507,35 @@ def view_rating():
     data = cursor.fetchall()
     return render_template("staff_home.html", average=avg, rating_comment=data)
 
+
+@app.route('/find_customer', methods=['GET', 'POST'])
+def find_customer():
+    username = session["username"]
+    flight_number = request.form['flight_number']
+    airline_name = request.form['airline_name']
+    dep_date = request.form["departure_date"]
+    cursor = conn.cursor()
+    query = 'SELECT * FROM staff WHERE username = %s'
+    cursor.execute(query, (username))
+    data = cursor.fetchone()
+    if (not data):
+        error = "No authentication for this action"
+        return render_template('staff_home.html', error1=error)
+    query = "SELECT flight_number,departure_date_time,airline_name " \
+            "FROM flight" \
+            "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
+    cursor.execute(query, (flight_number, airline_name, dep_date))
+    data = cursor.fetchall()
+    if (not data):
+        error = "Please check the flight information"
+        return render_template('staff_home.html', username=username, error1=error)
+
+    query = "SELECT name, phone_number" \
+            "FROM customer natural join buy natural join ticket natural join flight" \
+            "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
+    cursor.execute(query, (flight_number, airline_name, dep_date))
+    data = cursor.fetchone()
+    return render_template("staff_home.html", customers=data)
 
 # TODO: 放到每个的最开始
 def Auth_staff():

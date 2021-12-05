@@ -30,13 +30,40 @@
         </tr>
         {% endfor %}
     </table>
+
+    <!--- 查找一个flight的所有customer--->
+    <br></br>
+    <p>Find Customers in the flight</p>
+    <form action="/find_customer" method="POST">
+        <input type="text" name="flight_number" placeholder="flight number" required /> </br>
+        <input type="text" name="airline_name" placeholder="airline name" required /></br>
+
+        <head>Departure date and time:</head>
+        <!--- 特殊的date type--->
+        <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
+        <input type="submit" value=Submit />
+        {% if error1 %}
+        <p class="error1"><strong>Error:</strong> {{error1}}</p>
+        {% endif %}
+    </form>
+    <p>Customers in the flight</p>
+    <table>
+        <th>Name of customer</th>
+        <th>Phone number</th>
+        {% for line in customers %}
+        <tr>
+            <td>{{line['name']}}</td>
+            <td>{{line['phone)number']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
     <br></br>
     <p>Change Status for flights</p>
     <form action="/change_status " method="POST">
         <input type="text" name="flight_number" placeholder="flight number" required /> </br>
 
         <head>Departure date and time:</head>
-        <!--- 特殊的date type--->
         <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
         <label>Delay</label>
         <input type="radio" name="status" value="Delay" checked="checked" />
@@ -56,12 +83,10 @@
     <table>
         <th>Flight Number</th>
         <th>Departure Time</th>
-        <th>Airline Name</th>
         {% for line in customer_flights %}
         <tr>
             <td>{{line['flight_number']}}</td>
             <td>{{line['departure_date_time']}}</td>
-            <td>{{line['airline_name']}}</td>
         </tr>
         {% endfor %}
     </table>
@@ -79,7 +104,6 @@
     </form>
 
 
-    <!--- 所有拥有的airplane--->
     <p>Owned airplane</p>
     <table>
         <th>ID</th>
@@ -171,9 +195,8 @@
     <br></br>
     <p>View Reports:</p>
     <form action="/view_reports" method="POST">
-
-        
-
+        <head>Start date:</head>
+        <input type="date" name="start_date" placeholder="start_date" required /></br>
         <head>End date:</head>
         <input type="date" name="end_date" placeholder="end_date" required /></br>
         <input type="submit" value=Search />
@@ -204,7 +227,6 @@
         <p class="error7" style="color:red"><strong>Error:</strong> {{error7}}</p>
         {% endif %}
     </form>
-    <!--- 怎么monthwise--->
     {% if average %}
     <p><strong>Average score</strong> {{average}}/5</p>
     {% endif %}

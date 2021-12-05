@@ -188,11 +188,11 @@ def buy_ticket():
     if (not data):
         error = "Please check the flight information"
         return render_template('customer_home.html', username=username, error2=error)
-    # TODO: 查找座位id，算座位和价钱的逻辑
-    query = 'INSERT INTO buy VALUES(%s,%s,%s,%s,%s,%s,%s)'
-    # TODO：当前时间的计算，通过python或者sql
-    # TODO: cursor.execute(query, (ticket_id,username,now,name_on_card,card_num,card_type,expir_date))
-    data1 = cursor.fetchall()
+    query="SELECT ticket_id FROM ticket WHERE flight_number=%s and departure_date_time=%s and airline_name=%s and ticket_id not in buy LIMIT 1"
+    cursor.execute(query, (flight_number, airline_name, dep_date))
+    ticket_id=cursor.fetchone()[0]
+    query = 'INSERT INTO buy VALUES(%s,%s,now(),%s,%s,%s,%s)'
+    cursor.execute(query,(ticket_id,username,name_on_card,card_num,card_type))
     cursor.close()
     return render_template('customer_home.html', username=username, success="Successful buy tickets")
 
@@ -385,7 +385,6 @@ def create_new_airplane():
                 return render_template("staff_home.html", success="Successful added airplane")
 
 
-# TODO: 日期格式
 @app.route('/create_new_flights', methods=['GET', 'POST'])
 def create_new_flights():
     username = session["username"]
@@ -431,7 +430,17 @@ def create_new_flights():
     cursor.execute(query, (
         flight_number, dep_date, airline_name, arrival_date, base_price, status, airplane_id, depart_airport_code,
         arrival_airport_code))
-    # TODO: 加ticket !!!!!!!
+    query="SELECT max(ticket_id)GROUP FROM ticket"
+    cursor.execute(query)
+    ticket_id_max=int(cursor.fetchone()[0])
+    query="SELECT num_seats FROM airplane WHERE airplane_id=%s"
+    cursor.execute(query,airplane_id)
+    num_seats=cursor.fetchone()[0]
+    query="INSERT INTO ticket VALUES(%s,%s,%s,%s)"
+    for num in range(1,num_seats+1):
+        new_ticket_id=ticket_id_max+num
+        new_ticket_id=str(new_ticket_id).rjust(20,"0")
+        cursor.execute(query,(new_ticket_id,flight_number,dep_date,airline_name))
     return render_template("staff_home.html", success="Successful added flight")
 
 

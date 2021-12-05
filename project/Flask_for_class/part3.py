@@ -243,7 +243,7 @@ def get_airline_name():
     cursor.execute(query, (username))
     data = cursor.fetchone()
     cursor.close()
-    return data[0][0]
+    return data["airline_name"]
 
 
 # TODO: check
@@ -430,12 +430,12 @@ def create_new_flights():
     cursor.execute(query, (
         flight_number, dep_date, airline_name, arrival_date, base_price, status, airplane_id, depart_airport_code,
         arrival_airport_code))
-    query="SELECT max(ticket_id)GROUP FROM ticket"
+    query="SELECT max(ticket_id) AS max FROM ticket"
     cursor.execute(query)
-    ticket_id_max=int(cursor.fetchone()[0])
+    ticket_id_max=int(cursor.fetchone()["max"])
     query="SELECT num_seats FROM airplane WHERE airplane_id=%s"
     cursor.execute(query,airplane_id)
-    num_seats=cursor.fetchone()[0]
+    num_seats=cursor.fetchone()["num_seats"]
     query="INSERT INTO ticket VALUES(%s,%s,%s,%s)"
     for num in range(1,num_seats+1):
         new_ticket_id=ticket_id_max+num
@@ -499,9 +499,9 @@ def view_rating():
     dep_date = request.form["departure_date"]
     dep_date=dep_date.replace("T"," ")+":00"
     cursor = conn.cursor()
-    query = 'SELECT avg(rating) FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s'
+    query = 'SELECT avg(rating) AS avg FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s'
     cursor.execute(query, (flight_number, airline_name, dep_date))
-    avg = cursor.fetchone()[0]
+    avg = cursor.fetchone()["avg"]
     query = "SELECT rate, comment FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s"
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()

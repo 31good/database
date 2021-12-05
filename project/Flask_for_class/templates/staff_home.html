@@ -13,6 +13,10 @@
     </style>
     <h1>Welcome {{username}}</h1>
     <br></br>
+    {% if success %}
+    <p class="success"> {{success}}</p>
+    {% endif %}
+    <br></br>
     <p>Future Flights in 30 days</p>
     <table>
         <th>Flight Number</th>
@@ -26,81 +30,197 @@
         </tr>
         {% endfor %}
     </table>
-    <!--- 查找一个flight的所有customer--->
     <br></br>
-    <p>Find Customers in the flight</p>
-    <form action="/find_customer" method="POST">
+    <p>Change Status for flights</p>
+    <form action="/change_status " method="POST">
         <input type="text" name="flight_number" placeholder="flight number" required /> </br>
-        <input type="text" name="airline_name" placeholder="airline name" required /></br>
 
         <head>Departure date and time:</head>
         <!--- 特殊的date type--->
         <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
-        <input type="submit" value=Submit />
-        {% if error1 %}
-        <p class="error1"><strong>Error:</strong> {{error1}}</p>
+        <label>Delay</label>
+        <input type="radio" name="status" value="Delay" checked="checked" />
+        <label>Ontime</label>
+        <input type="radio" name="status" value="Ontime" />
+        <input type="submit" value=Change />
+        {% if error5 %}
+        <p class="error5"><strong>Error:</strong> {{error5}}</p>
         {% endif %}
     </form>
+
+
+    <!---找一年以来最多的customer--->
     <br></br>
-    <p>Customers in the flight</p>
+    <p>Most frequent Customer in last year</p>
+    <p> {{customer_name}}</p>
     <table>
-        <th>Name of customer</th>
-        <th>Phone number</th>
-        {% for line in customers %}
+        <th>Flight Number</th>
+        <th>Departure Time</th>
+        <th>Airline Name</th>
+        {% for line in customer_flights %}
         <tr>
-            <td>{{line['name']}}</td>
-            <td>{{line['phone)number']}}</td>
+            <td>{{line['flight_number']}}</td>
+            <td>{{line['departure_date_time']}}</td>
+            <td>{{line['airline_name']}}</td>
         </tr>
         {% endfor %}
     </table>
+
     <br></br>
-    <p>Create New Airport:</p>
+    <p>Add New Airport:</p>
     <form action="/create_new_airport" method="POST">
         <input type="number" name="code" placeholder="airport code" required /> </br>
         <input type="text" name="airport_name" placeholder="airport name" required /></br>
         <input type="text" name="city" placeholder="city" required /> </br>
-        <input type="submit" value=Search />
+        <input type="submit" value=Add />
         {% if error2 %}
         <p class="error2"><strong>Error:</strong> {{error2}}</p>
         {% endif %}
     </form>
 
-    <p>Create New Airplane:</p>
+
+    <!--- 所有拥有的airplane--->
+    <p>Owned airplane</p>
+    <table>
+        <th>ID</th>
+        <th>Number of seats</th>
+        {% for line in owned_airplane %}
+        <tr>
+            <td>{{line['id']}}</td>
+            <td>{{line['num_seats']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>Add New Airplane:</p>
     <form action="/create_new_airplane" method="POST">
-        <input type="text" name="airline_name" placeholder="airline name" required /> </br>
         <input type="text" name="id" placeholder="id" required /></br>
         <input type="int" name="num_seats" placeholder="number of seats" required /> </br>
-        <input type="submit" value=Search />
+        <input type="submit" value=Add />
         {% if error3 %}
         <p class="error3"><strong>Error:</strong> {{error3}}</p>
         {% endif %}
     </form>
 
-    <p>Create New Flights:</p>
+    <p>Add New Flights:</p>
     <form action="/create_new_flights" method="POST">
         <input type="text" name="flight_number" placeholder="flight number" required /> </br>
 
         <head>Departure date and time:</head>
-        <input type="date" name="departure_date" placeholder="departure date" required /></br>
-        <input type="text" name="airline_name" placeholder="airline name" required /></br>
+        <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
 
         <head>Arrival date and time:</head>
-        <input type="date" name="arrival_date" placeholder="arrival date" required /></br>
+        <input type="datetime-local" name="arrival_date" placeholder="arrival date" required /></br>
         <input type="float" name="base_price" placeholder="base price" required /> </br>
-        <!--- status 做成 button--->
+        <label>Delay</label>
+        <input type="radio" name="status" value="Delay" checked="checked" />
+        <label>Ontime</label>
+        <input type="radio" name="status" value="Ontime" />
         <input type="int" name="airplane_id" placeholder="airplane id" required /></br>
         <input type="int" name="depart_airport_code" placeholder="depart airport code" required /> </br>
         <input type="int" name="arrive_airport_code" placeholder="arrive airport code" required /> </br>
-        <input type="submit" value=Search />
+        <input type="submit" value=Add />
         {% if error4 %}
         <p class="error4"><strong>Error:</strong> {{error4}}</p>
         {% endif %}
     </form>
 
+    <br></br>
+    <p>Top Destinations in last 3 months</p>
+    <table>
+        <th>City name</th>
+        <th>Ticket sold amount</th>
+        {% for line in destination_3_months %}
+        <tr>
+            <td>{{line['city']}}</td>
+            <td>{{line['count']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br></br>
+    <p>Top Destinations in last year</p>
+    <table>
+        <th>City name</th>
+        <th>Ticket sold amount</th>
+        {% for line in destination_year %}
+        <tr>
+            <td>{{line['city']}}</td>
+            <td>{{line['count']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br></br>
+    <p>Revenue in last month</p>
+    <table>
+        <th>sum of revenue</th>
+        {% for line in revenue_last_month %}
+        <tr>
+            <td>{{line[0]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br></br>
+    <p>Revenue in last year</p>
+    <table>
+        <th>sum of revenue</th>
+        {% for line in revenue_last_year %}
+        <tr>
+            <td>{{line[0]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br></br>
+    <p>View Reports:</p>
+    <form action="/view_reports" method="POST">
 
-    <!--- 买票 需要有下拉菜单（根据python定）--->
-    <!--- 不确定怎么implement--->
-    <p>Comments and Rating for Previous Flights</p>
+        
+
+        <head>End date:</head>
+        <input type="date" name="end_date" placeholder="end_date" required /></br>
+        <input type="submit" value=Search />
+        {% if error6 %}
+        <p class="error6"><strong>Error:</strong> {{error6}}</p>
+        {% endif %}
+    </form>
+    <!--- 怎么monthwise--->
+    <p>Report</p>
+    <table>
+        <th>Month</th>
+        <th>Amount of tickets sold</th>
+        {% for line in ticket_sold %}
+        <tr>
+            <td>{{line[0]}}</td>
+            <td>{{line[0]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p>View Flight Ratings:</p>
+    <form action="/view_rating" method="POST">
+        <input type="text" name="flight_number" placeholder="flight number" required /> </br>
+        <head>Departure date and time:</head>
+        <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
+        <input type="submit" value=Search />
+        {% if error7 %}
+        <p class="error7"><strong>Error:</strong> {{error7}}</p>
+        {% endif %}
+    </form>
+    <!--- 怎么monthwise--->
+    {% if average %}
+    <p><strong>Average score</strong> {{average}}/5</p>
+    {% endif %}
+    <p>Rating and comment</p>
+    <table>
+        <th>Rating</th>
+        <th>Comment</th>
+        {% for line in rating_comment %}
+        <tr>
+            <td>{{line["rating"]}}</td>
+            <td>{{line["comment"]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+
 
     <a href="/logout">Logout</a>
 

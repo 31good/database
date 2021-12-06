@@ -31,13 +31,41 @@
         {% endfor %}
     </table>
 
+    <br></br>
+    <p>Search Flights</p>
+    <form action="/search_flights_staff" method="POST">
+        <head>Start date:</head>
+        <input type="datetime" name="start_date" placeholder="start_date" required /></br>
+        <head>End date:</head>
+        <input type="datetime" name="end_date" placeholder="end_date" required /></br>
+		<input type="text" name="source_city" placeholder="source_city" required /> </br>
+		<input type="text" name="source_airport" placeholder="source airport" required /></br>
+		<input type="text" name="des_city" placeholder="destination city" required /> </br>
+		<input type="text" name="des_airport" placeholder="destination airport" required /></br>
+        <input type="submit" value=Search />
+        {% if error8 %}
+        <p class="error8"><strong>Error:</strong> {{error8}}</p>
+        {% endif %}
+    </form>
+    <p>Flight information</p>
+    <table>
+        <th>Flight number</th>
+        <th>Departure date</th>
+        {% for line in search_flights %}
+        <tr>
+            <td>{{line['flight_number']}}</td>
+            <td>{{line['departure_date_time']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+
+
     <!--- 查找一个flight的所有customer--->
     <br></br>
     <p>Find Customers in the flight</p>
     <form action="/find_customer" method="POST">
         <input type="text" name="flight_number" placeholder="flight number" required /> </br>
-        <input type="text" name="airline_name" placeholder="airline name" required /></br>
-
         <head>Departure date and time:</head>
         <!--- 特殊的date type--->
         <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
@@ -53,7 +81,7 @@
         {% for line in customers %}
         <tr>
             <td>{{line['name']}}</td>
-            <td>{{line['phone)number']}}</td>
+            <td>{{line['phone_number']}}</td>
         </tr>
         {% endfor %}
     </table>
@@ -106,11 +134,11 @@
 
     <p>Owned airplane</p>
     <table>
-        <th>ID</th>
+        <th>Airplane ID</th>
         <th>Number of seats</th>
         {% for line in owned_airplane %}
         <tr>
-            <td>{{line['id']}}</td>
+            <td>{{line['airplane_id']}}</td>
             <td>{{line['num_seats']}}</td>
         </tr>
         {% endfor %}
@@ -173,25 +201,9 @@
         {% endfor %}
     </table>
     <br></br>
-    <p>Revenue in last month</p>
-    <table>
-        <th>sum of revenue</th>
-        {% for line in revenue_last_month %}
-        <tr>
-            <td>{{line[0]}}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <p>Revenue in last month {{sum_month}}</p>
     <br></br>
-    <p>Revenue in last year</p>
-    <table>
-        <th>sum of revenue</th>
-        {% for line in revenue_last_year %}
-        <tr>
-            <td>{{line[0]}}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <p>Revenue in last year {{sum_year}}</p>
     <br></br>
     <p>View Reports:</p>
     <form action="/view_reports" method="POST">

@@ -26,9 +26,6 @@
         <input type="radio" name="flight_type" value = "All" />
         </br>
         <input type="submit" value=Search />
-        {% if error1 %}
-        <p class="error1" style="color:red"><strong>Error:</strong> {{error1}}</p>
-        {% endif %}
         <header>Your {{flight_type}} Flight</header>
         <table>
         <th>Flight Number</th>
@@ -154,8 +151,8 @@
         <label for="5.0">5.0</label>
         <br></br>
         <textarea name="comment" rows="10" cols="40">
-    Your comments
-    </textarea>
+        Your comments
+        </textarea>
         <input type="submit" value=Submit />
         {% if error3 %}
         <p class="error3" style="color:red"><strong>Error:</strong> {{error3}}</p>

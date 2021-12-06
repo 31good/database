@@ -35,9 +35,9 @@
     <p>Search Flights</p>
     <form action="/search_flights_staff" method="POST">
         <head>Start date:</head>
-        <input type="datetime" name="start_date" placeholder="start_date" required /></br>
+        <input type="date" name="start_date" placeholder="start_date" required /></br>
         <head>End date:</head>
-        <input type="datetime" name="end_date" placeholder="end_date" required /></br>
+        <input type="date" name="end_date" placeholder="end_date" required /></br>
 		<input type="text" name="source_city" placeholder="source_city" required /> </br>
 		<input type="text" name="source_airport" placeholder="source airport" required /></br>
 		<input type="text" name="des_city" placeholder="destination city" required /> </br>
@@ -71,7 +71,7 @@
         <input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
         <input type="submit" value=Submit />
         {% if error1 %}
-        <p class="error1"><strong>Error:</strong> {{error1}}</p>
+        <p class="error1" style="color:red"><strong>Error:</strong> {{error1}}</p>
         {% endif %}
     </form>
     <p>Customers in the flight</p>
@@ -97,6 +97,7 @@
         <input type="radio" name="status" value="Delay" checked="checked" />
         <label>Ontime</label>
         <input type="radio" name="status" value="Ontime" />
+        </br>
         <input type="submit" value=Change />
         {% if error5 %}
         <p class="error5" style="color:red"><strong>Error:</strong> {{error5}}</p>
@@ -167,6 +168,7 @@
         <input type="radio" name="status" value="Delay" checked="checked" />
         <label>Ontime</label>
         <input type="radio" name="status" value="Ontime" />
+        </br>
         <input type="int" name="airplane_id" placeholder="airplane id" required /></br>
         <input type="int" name="depart_airport_code" placeholder="depart airport code" required /> </br>
         <input type="int" name="arrive_airport_code" placeholder="arrive airport code" required /> </br>
@@ -229,6 +231,7 @@
         {% endfor %}
     </table>
 
+    <br></br>
     <p>View Flight Ratings:</p>
     <form action="/view_rating" method="POST">
         <input type="text" name="flight_number" placeholder="flight number" required /> </br>
@@ -240,7 +243,7 @@
         {% endif %}
     </form>
     {% if average %}
-    <p><strong>Average score</strong> {{average}}/5</p>
+    <p><strong>Average score</strong> {{average}}/5.00</p>
     {% endif %}
     <p>Rating and comment</p>
     <table>

@@ -331,6 +331,7 @@ def get_staff_home_data():
     return (username, data1, data2, data3, sum_month, sum_year, email, data6, data7)
 
 
+# TODO:check
 @app.route('/search_flights_staff', methods=['GET', 'POST'])
 def search_flights_staff():
     username, data1, data2, data3, sum_month, sum_year, email, data6, data7 = get_staff_home_data()
@@ -357,38 +358,33 @@ def search_flights_staff():
 @app.route('/create_new_airport', methods=['GET', 'POST'])
 def create_new_airport():
     username, data1, data2, data3, sum_month, sum_year, email, data6, data7 = get_staff_home_data()
-    username = session["username"]
     code = request.form['code']
     airport_name = request.form['airport_name']
     city = request.form["city"]
-    cursor = conn.cursor()
-    query = 'SELECT * FROM staff WHERE username = %s'
-    cursor.execute(query, (username))
-    data = cursor.fetchone()
-    if (not data):
-        error = "No authentication for this action"
+    error = Auth_staff()
+    if (error != None):
         return render_template('staff_home.html', error2=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
-    else:
-        query = 'SELECT * FROM airport WHERE code = %s'
-        cursor.execute(query, (code))
-        data = cursor.fetchone()
-        if (data):
-            error = "That code for airport has already existed"
-            return render_template('staff_home.html', error2=error, username=username, airline_fights=data1,
-                                   destination_3_months=data2,
-                                   destination_year=data3, sum_month=sum_month, sum_year=sum_year,
-                                   customer_name=email, customer_flights=data6, owned_airplane=data7)
-        else:
-            query = 'INSERT INTO airport VALUES(%s,%s,%s)'
-            cursor.execute(query, (code, airport_name, city))
-        return render_template("staff_home.html", success="Successful added Airport", username=username,
-                               airline_fights=data1,
+    cursor = conn.cursor()
+    query = 'SELECT * FROM airport WHERE code = %s'
+    cursor.execute(query, (code))
+    data = cursor.fetchone()
+    if (data):
+        error = "That code for airport has already existed"
+        return render_template('staff_home.html', error2=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
+
+    query = 'INSERT INTO airport VALUES(%s,%s,%s)'
+    cursor.execute(query, (code, airport_name, city))
+    return render_template("staff_home.html", success="Successful added Airport", username=username,
+                           airline_fights=data1,
+                           destination_3_months=data2,
+                           destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                           customer_name=email, customer_flights=data6, owned_airplane=data7)
 
 
 @app.route('/create_new_airplane', methods=['GET', 'POST'])
@@ -398,46 +394,39 @@ def create_new_airplane():
     airline_name = get_airline_name()
     id = request.form['id']
     num_seats = request.form["num_seats"]
-    cursor = conn.cursor()
-    query = 'SELECT * FROM staff WHERE username = %s'
-    cursor.execute(query, (username))
-    data = cursor.fetchone()
-    error = None
-    if (not data):
-        error = "No authentication for this action"
+    error = Auth_staff()
+    if (error != None):
         return render_template('staff_home.html', error3=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
-    else:
-        query = 'SELECT * FROM airline WHERE airline_name = %s'
-        cursor.execute(query, (airline_name))
-        data = cursor.fetchone()
-        if (not data):
-            error = "That airline does not exist"
-            return render_template('staff_home.html', error3=error, username=username, airline_fights=data1,
-                                   destination_3_months=data2,
-                                   destination_year=data3, sum_month=sum_month, sum_year=sum_year,
-                                   customer_name=email, customer_flights=data6, owned_airplane=data7)
-        else:
-            query = 'SELECT * FROM airplane WHERE airline_name = %s and airplane_id = %s'
-            cursor.execute(query, (airline_name, id))
-            data = cursor.fetchone()
-            if (data):
-                error = "That code of airplane has already existed for that airline"
-                return render_template('staff_home.html', error3=error, username=username, airline_fights=data1,
-                                       destination_3_months=data2,
-                                       destination_year=data3, sum_month=sum_month, sum_year=sum_year,
-                                       customer_name=email, customer_flights=data6, owned_airplane=data7)
-            else:
-                query = 'INSERT INTO airplane VALUES(%s,%s,%s)'
-                cursor.execute(query, (airline_name, id, num_seats))
-                username, data1, data2, data3, sum_month, sum_year, email, data6, data7 = get_staff_home_data()
-                return render_template("staff_home.html", success="Successful added airplane", username=username,
-                                       airline_fights=data1,
-                                       destination_3_months=data2,
-                                       destination_year=data3, sum_month=sum_month, sum_year=sum_year,
-                                       customer_name=email, customer_flights=data6, owned_airplane=data7)
+    cursor = conn.cursor()
+    query = 'SELECT * FROM airline WHERE airline_name = %s'
+    cursor.execute(query, (airline_name))
+    data = cursor.fetchone()
+    if (not data):
+        error = "That airline does not exist"
+        return render_template('staff_home.html', error3=error, username=username, airline_fights=data1,
+                               destination_3_months=data2,
+                               destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                               customer_name=email, customer_flights=data6, owned_airplane=data7)
+    query = 'SELECT * FROM airplane WHERE airline_name = %s and airplane_id = %s'
+    cursor.execute(query, (airline_name, id))
+    data = cursor.fetchone()
+    if (data):
+        error = "That code of airplane has already existed for that airline"
+        return render_template('staff_home.html', error3=error, username=username, airline_fights=data1,
+                               destination_3_months=data2,
+                               destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                               customer_name=email, customer_flights=data6, owned_airplane=data7)
+    query = 'INSERT INTO airplane VALUES(%s,%s,%s)'
+    cursor.execute(query, (airline_name, id, num_seats))
+    username, data1, data2, data3, sum_month, sum_year, email, data6, data7 = get_staff_home_data()
+    return render_template("staff_home.html", success="Successful added airplane", username=username,
+                           airline_fights=data1,
+                           destination_3_months=data2,
+                           destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                           customer_name=email, customer_flights=data6, owned_airplane=data7)
 
 
 @app.route('/create_new_flights', methods=['GET', 'POST'])
@@ -454,16 +443,13 @@ def create_new_flights():
     depart_airport_code = request.form["depart_airport_code"]
     arrival_airport_code = request.form["arrival_airport_code"]
     status = request.form["status"]
-    cursor = conn.cursor()
-    query = 'SELECT * FROM staff WHERE username = %s'
-    cursor.execute(query, (username))
-    data = cursor.fetchone()
-    if (not data):
-        error = "No authentication for this action"
+    error = Auth_staff()
+    if (error != None):
         return render_template('staff_home.html', error4=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
+    cursor = conn.cursor()
     query = "SELECT flight_number,departure_date_time,airline_name " \
             "FROM flight" \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
@@ -522,16 +508,13 @@ def change_status():
     dep_date = request.form["departure_date"]
     dep_date = dep_date.replace("T", " ") + ":00"
     status = request.form["status"]
-    cursor = conn.cursor()
-    query = 'SELECT * FROM staff WHERE username = %s'
-    cursor.execute(query, (username))
-    data = cursor.fetchone()
-    if (not data):
-        error = "No authentication for this action"
+    error = Auth_staff()
+    if (error != None):
         return render_template('staff_home.html', error5=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
+    cursor = conn.cursor()
     query = "SELECT flight_number,departure_date_time,airline_name " \
             "FROM flight" \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
@@ -558,16 +541,13 @@ def view_reports():
     username, data1, data2, data3, sum_month, sum_year, email, data6, data7 = get_staff_home_data()
     start_date = request.form["start_date"]
     end_date = request.form["end_date"]
-    cursor = conn.cursor()
-    query = 'SELECT * FROM staff WHERE username = %s'
-    cursor.execute(query, (username))
-    data = cursor.fetchone()
-    if (not data):
-        error = "No authentication for this action"
+    error = Auth_staff()
+    if (error != None):
         return render_template('staff_home.html', error6=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
+    cursor = conn.cursor()
     # TODO: 每个月的!!!!
 
 
@@ -603,16 +583,13 @@ def find_customer():
     flight_number = request.form['flight_number']
     airline_name = get_airline_name()
     dep_date = request.form["departure_date"]
-    cursor = conn.cursor()
-    query = 'SELECT * FROM staff WHERE username = %s'
-    cursor.execute(query, (username))
-    data = cursor.fetchone()
-    if (not data):
-        error = "No authentication for this action"
+    error = Auth_staff()
+    if (error != None):
         return render_template('staff_home.html', error1=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
+    cursor = conn.cursor()
     query = "SELECT flight_number,departure_date_time,airline_name FROM flight " \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
     cursor.execute(query, (flight_number, airline_name, dep_date))

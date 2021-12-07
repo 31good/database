@@ -44,6 +44,7 @@
         </tr>
         {% endfor %}
         </table>
+        <br></br>
         <header>Your have spend ${{past_year_spend}} last year</header><br></br>
         <header>Monthwise spending in the last 6 month from now</header>
         <table>
@@ -54,7 +55,7 @@
         <tr>
             <td>{{line['year']}}</td>
             <td>{{line['month']}}</td>
-            <td>{{line['spending']}}</td>
+            <td>{{line['total_spend']}}</td>
         </tr>
         {% endfor %}
         </table>

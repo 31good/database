@@ -184,15 +184,15 @@ def customer_home(if_initial):
     data2 = cursor.fetchall()
     query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend " \
             "from (select distinct year(date) as year, month(date) as month " \
-            "from calendar where date between now() and DATE_ADD(now(), INTERVAL-12 MONTH) group by month)as a " \
-            "left join (select * from buy where email = %s and date(purchase_date_time) between now() and DATE_ADD(now(), INTERVAL-6 MONTH))as b " \
-            "on a.year = year(b.purchase_date_time) and a.month = month(b.purchase_date_time) group by year,month Order by year, month desc"
+            "from calendar where date between DATE_ADD(now(), INTERVAL-12 MONTH) and now() group by month)as a " \
+            "left join (select * from buy where email = %s and date(purchase_date_time) between DATE_ADD(now(), INTERVAL-12 MONTH) and now())as b " \
+            "on a.year = year(b.purchase_date_time) and a.month = month(b.purchase_date_time)"
     cursor.execute(query, (username))
     past_year_spend = cursor.fetchone()["total_spend"]
     query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend, " \
             "a.year, a.month from (select distinct year(date) as year, month(date) as month " \
-            "from calendar where date between now() and DATE_ADD(now(), INTERVAL-6 MONTH) group by month)as a " \
-            "left join (select * from buy where email = %s and date(purchase_date_time) between now() and DATE_ADD(now(), INTERVAL-6 MONTH))as b " \
+            "from calendar where date between DATE_ADD(now(), INTERVAL-6 MONTH) and now() group by month)as a " \
+            "left join (select * from buy where email = %s and date(purchase_date_time) between DATE_ADD(now(),INTERVAL-6 MONTH)and now())as b " \
             "on a.year = year(b.purchase_date_time) and a.month = month(b.purchase_date_time) group by year,month Order by year, month desc"
     cursor.execute(query, (username))
     last_6_month_spend = cursor.fetchall()

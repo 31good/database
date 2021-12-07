@@ -178,13 +178,26 @@ def customer_home(if_initial):
                 "WHERE email = %s and departure_date_time >= now() ORDER BY departure_date_time DESC"
     cursor.execute(query, (username))
     data1 = cursor.fetchall()
-    #TODO: 评论
     query= "SELECT b.flight_number,b.departure_date_time, b.airline_name FROM buy as a natural " \
            "join ticket as b join rate as c WHERE a.email=%s and b.departure_date_time <= now() and c.rating is not null"
     cursor.execute(query,(username))
     data2 = cursor.fetchall()
+    query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend " \
+            "from (select distinct year(date) as year, month(date) as month " \
+            "from calendar where date between now() and DATE_ADD(now(), INTERVAL-12 MONTH) group by month)as a " \
+            "left join (select * from buy where email = %s and date(purchase_date_time) between now() and DATE_ADD(now(), INTERVAL-6 MONTH))as b " \
+            "on a.year = year(b.purchase_date_time) and a.month = month(b.purchase_date_time) group by year,month Order by year, month desc"
+    cursor.execute(query, (username))
+    past_year_spend = cursor.fetchone()["total_spend"]
+    query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend, " \
+            "a.year, a.month from (select distinct year(date) as year, month(date) as month " \
+            "from calendar where date between now() and DATE_ADD(now(), INTERVAL-6 MONTH) group by month)as a " \
+            "left join (select * from buy where email = %s and date(purchase_date_time) between now() and DATE_ADD(now(), INTERVAL-6 MONTH))as b " \
+            "on a.year = year(b.purchase_date_time) and a.month = month(b.purchase_date_time) group by year,month Order by year, month desc"
+    cursor.execute(query, (username))
+    last_6_month_spend = cursor.fetchall()
     cursor.close()
-    return render_template('customer_home.html', username=username, future_flight=data1, flight_type=flight_type,not_commented_flights=data2)
+    return render_template('customer_home.html', username=username, future_flight=data1, flight_type=flight_type,not_commented_flights=data2, last_6_month_spend = last_6_month_spend, past_year_spend = past_year_spend)
 
 
 # TODO
@@ -281,16 +294,18 @@ def track_spending():
     start_date = request.form["start_date"]
     end_date = request.form["end_date"]
     cursor = conn.cursor()
-    query = "SELECT sum(price) as total_spend, year(purchase_date_time) as year, month(purchase_date_time)as month" \
-            " from buy left join (select year, month from master.dobo.spt_values where type = 'p' and year between 1900 and 3000 and month between 1 and 12)where email =%s and date(purchase_date_time) between %s and %s " \
-            "group by year, month Order by year, month desc"
-    cursor.execute(query, (username, start_date, end_date))
+    query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend, " \
+            "a.year, a.month from (select distinct year(date) as year, month(date) as month " \
+            "from calendar where date between %s and %s group by month)as a " \
+            "left join (select * from buy where email = %s and date(purchase_date_time) between %s and %s)as b " \
+            "on a.year = year(b.purchase_date_time) and a.month = month(b.purchase_date_time) group by year,month Order by year, month desc"
+    cursor.execute(query, (start_date, end_date, username, start_date, end_date))
     cursor.close()
     data1 = cursor.fetchall()
     if not data1:
-        return render_template('customer_home.html', username=username, error4 = "No Spend found")
+        return render_template('customer_home.html', username=username, error4 = "No Spend found", start_date = start_date, end_date = end_date)
     else:
-        return render_template('customer_home.html', username=username, track_spend = data1)
+        return render_template('customer_home.html', username=username, track_spend = data1, start_date = start_date, end_date = end_date)
 
 
 # TODO: check

@@ -17,7 +17,7 @@
     <p class="success" style="color:green"> {{success}}</p>
     {% endif %}
     {% if fault %}
-    <p class="fault" style="color:red"> {{success}}</p>
+    <p class="fault" style="color:red"> {{fault}}</p>
     {% endif %}
     <p>Your Flights</p>
     <form name = "iForm" action = "/customer_home/0" method = "POST">
@@ -44,7 +44,47 @@
         </tr>
         {% endfor %}
         </table>
+        <header>Your have spend ${{past_year_spend}} last year</header><br></br>
+        <header>Monthwise spending in the last 6 month from now</header>
+        <table>
+        <th>year</th>
+        <th>month</th>
+        <th>money spend</th>
+        {% for line in last_6_month_spend %}
+        <tr>
+            <td>{{line['year']}}</td>
+            <td>{{line['month']}}</td>
+            <td>{{line['spending']}}</td>
+        </tr>
+        {% endfor %}
+        </table>
     </form>
+
+    <br></br>
+    <p>Track my spending:</p>
+    <form action="/track_spending" method="POST">
+        <head>Start date:</head>
+        <input type="date" name="start_date" placeholder="start_date" required /></br>
+        <head>End date:</head>
+        <input type="date" name="end_date" placeholder="end_date" required /></br>
+        <input type="submit" value=Search />
+        {% if error4 %}
+        <p class="error4" style="color:red"><strong>Error:</strong> {{error4}}</p>
+        {% endif %}
+    </form>
+    <header>Your monthwise spending from {{start_date}} to {{end_date}}</header>
+    <table>
+        <th>Year</th>
+        <th>Month</th>
+        <th>Spending</th>
+        {% for line in track_spend %}
+        <tr>
+            <td>{{line["year"]}}</td>
+            <td>{{line["month"]}}</td>
+            <td>{{line["total_spend"]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
     <br></br>
     <p>Search Flights</p>
@@ -184,30 +224,6 @@
         {% endif %}
     </form>
     <!--- TODO--->
-    <br></br>
-    <p>Track my spending:</p>
-    <form action="/track_spending" method="POST">
-        <head>Start date:</head>
-        <input type="date" name="start_date" placeholder="start_date" required /></br>
-        <head>End date:</head>
-        <input type="date" name="end_date" placeholder="end_date" required /></br>
-        <input type="submit" value=Search />
-        {% if error4 %}
-        <p class="error4" style="color:red"><strong>Error:</strong> {{error4}}</p>
-        {% endif %}
-    </form>
-    <table>
-        <th>Year</th>
-        <th>Month</th>
-        <th>Spending</th>
-        {% for line in track_spend %}
-        <tr>
-            <td>{{line["year"]}}</td>
-            <td>{{line["month"]}}</td>
-            <td>{{line["total_spend"]}}</td>
-        </tr>
-        {% endfor %}
-    </table>
 
     <a href="/logout">Logout</a>
 

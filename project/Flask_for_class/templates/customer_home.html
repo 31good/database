@@ -31,11 +31,13 @@
         <th>Flight Number</th>
         <th>Departure Time</th>
         <th>Airline Name</th>
+        <th>Ticket id</th>
         {% for line in future_flight %}
         <tr>
             <td>{{line['flight_number']}}</td>
             <td>{{line['dep']}}</td>
             <td>{{line['airline_name']}}</td>
+            <td>{{line['ticket_id']}}</td>
         </tr>
         {% endfor %}
         </table>

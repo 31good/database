@@ -115,11 +115,12 @@ check(rating in(0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0))
 create table Buy(
 ticket_id 		varchar(20),
 email 		varchar(20),
-purcahse_date_time timestamp not null,
+purchase_date_time timestamp not null,
 name_on_card 	varchar(40) not null,
 card_num              varchar(16) not null,
 card_type 	varchar(20) not null,
 expiration_date 	date not null,
+price		float，
 primary key(ticket_id),
 foreign key(ticket_id) references Ticket
 	on delete cascade

@@ -165,15 +165,15 @@ def customer_home(if_initial):
     else:
         flight_type = "Future"
     if flight_type == "All":
-        query = "SELECT flight_number,departure_date_time as dep,airline_name " \
+        query = "SELECT flight_number,departure_date_time as dep,airline_name, buy.ticket_id " \
                 "FROM customer natural join buy natural join ticket " \
                 "WHERE email = %s ORDER BY departure_date_time DESC"
     elif flight_type == "Past":
-        query = "SELECT flight_number,departure_date_time as dep,airline_name " \
+        query = "SELECT flight_number,departure_date_time as dep,airline_name, buy.ticket_id " \
                 "FROM customer natural join buy natural join ticket " \
                 "WHERE email = %s and departure_date_time < now() ORDER BY departure_date_time DESC"
     else:
-        query = "SELECT flight_number,departure_date_time as dep,airline_name " \
+        query = "SELECT flight_number,departure_date_time as dep,airline_name, buy.ticket_id " \
                 "FROM customer natural join buy natural join ticket " \
                 "WHERE email = %s and departure_date_time >= now() ORDER BY departure_date_time DESC"
     cursor.execute(query, (username))
@@ -216,7 +216,7 @@ def buy_ticket():
     ticket_id = cursor.fetchone()["ticket_id"]
     query = 'INSERT INTO buy VALUES(%s,%s,now(),%s,%s,%s,%s)'
     cursor.execute(query, (ticket_id, username, name_on_card, card_num, card_type,expir_date))
-    query = "select username from rate where username = %s and airline_name = %s and departure_date_time = %s and flight_number = %s"
+    query = "select email from rate where email = %s and airline_name = %s and departure_date_time = %s and flight_number = %s"
     cursor.execute(query, (username, airline_name, dep_date, flight_number))
     data1 = cursor.fetchall()
     if (not data1):
@@ -262,6 +262,8 @@ def track_spending():
     username = session["username"]
     start_date = request.form["start_date"]
     end_date = request.form["end_date"]
+    cursor = conn.cursor()
+    query = "SELECT total"
 
 
 # TODO: check

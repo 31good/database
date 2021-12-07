@@ -16,12 +16,15 @@
     {% if success %}
     <p class="success" style="color:green"> {{success}}</p>
     {% endif %}
-    <p>Checking Flights</p>
+    {% if fault %}
+    <p class="fault" style="color:red"> {{success}}</p>
+    {% endif %}
+    <p>Your Flights</p>
     <form name = "iForm" action = "/customer_home/0" method = "POST">
-        <label>Past</label>
-        <input type="radio" name="flight_type" value = "Past" checked = "checked" />
         <label>Future</label>
-        <input type="radio" name="flight_type" value = "Future" />
+        <input type="radio" name="flight_type" value = "Future" checked = "checked" />
+        <label>Past</label>
+        <input type="radio" name="flight_type" value = "Past" />
         <label>All</label>
         <input type="radio" name="flight_type" value = "All" />
         </br>
@@ -194,13 +197,14 @@
         {% endif %}
     </form>
     <table>
+        <th>Year</th>
         <th>Month</th>
         <th>Spending</th>
         {% for line in track_spend %}
         <tr>
-            <!--- TODO--->
-            <td>{{line["rating"]}}</td>
-            <td>{{line["comment"]}}</td>
+            <td>{{line["year"]}}</td>
+            <td>{{line["month"]}}</td>
+            <td>{{line["total_spend"]}}</td>
         </tr>
         {% endfor %}
     </table>

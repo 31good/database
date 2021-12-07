@@ -120,7 +120,7 @@ name_on_card 	varchar(40) not null,
 card_num              varchar(16) not null,
 card_type 	varchar(20) not null,
 expiration_date 	date not null,
-price		float，
+price		float not null，
 primary key(ticket_id),
 foreign key(ticket_id) references Ticket
 	on delete cascade

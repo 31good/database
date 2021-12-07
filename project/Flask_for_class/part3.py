@@ -214,16 +214,34 @@ def buy_ticket():
             "and airline_name=%s and ticket_id not in (SELECT ticket_id FROM buy) LIMIT 1"
     cursor.execute(query, (flight_number, dep_date,airline_name))
     ticket_id = cursor.fetchone()["ticket_id"]
-    query = 'INSERT INTO buy VALUES(%s,%s,now(),%s,%s,%s,%s)'
-    cursor.execute(query, (ticket_id, username, name_on_card, card_num, card_type,expir_date))
-    query = "select email from rate where email = %s and airline_name = %s and departure_date_time = %s and flight_number = %s"
-    cursor.execute(query, (username, airline_name, dep_date, flight_number))
-    data1 = cursor.fetchall()
-    if (not data1):
-        query="INSERT INTO rate VALUES(%s,%s,%s,%s,Null,Null)"
-        cursor.execute(query,(username,airline_name,dep_date,flight_number))
-    cursor.close()
-    return render_template('customer_home.html', username=username, success="Successful buy tickets")
+    if not ticket_id:
+        return render_template('customer_home.html', username=username, fault="the flight is full")
+    else:
+        query = "SELECT count(distinct ticket_id) as remain, num_seats FROM ticket natural join airplane natural join flight " \
+                "WHERE flight_number=%s and departure_date_time=%s and airline_name=%s and ticket_id not in (SELECT ticket_id FROM buy) group by num_seats"
+        cursor.execute(query, (flight_number, dep_date, airline_name))
+        remain = int(cursor.fetchone()["remain"])
+        query = "SELECT count(distinct ticket_id) as remain, num_seats FROM ticket natural join airplane natural join flight " \
+                "WHERE flight_number=%s and departure_date_time=%s and airline_name=%s and ticket_id not in (SELECT ticket_id FROM buy) group by num_seats"
+        cursor.execute(query, (flight_number, dep_date, airline_name))
+        num_seats = float(cursor.fetchone()["num_seats"])
+        query = "SELECT distinct base_price FROM flight WHERE flight_number=%s and departure_date_time=%s " \
+                "and airline_name=%s"
+        cursor.execute(query, (flight_number, dep_date, airline_name))
+        base_price = cursor.fetchone()["base_price"]
+        query = 'INSERT INTO buy VALUES(%s,%s,now(),%s,%s,%s,%s, %s)'
+        if remain/num_seats <= 0.25:
+            cursor.execute(query, (ticket_id, username, name_on_card, card_num, card_type, expir_date, base_price*1.25))
+        else:
+            cursor.execute(query,(ticket_id, username, name_on_card, card_num, card_type, expir_date, base_price))
+        query = "select email from rate where email = %s and airline_name = %s and departure_date_time = %s and flight_number = %s"
+        cursor.execute(query, (username, airline_name, dep_date, flight_number))
+        data1 = cursor.fetchall()
+        if (not data1):
+            query = "INSERT INTO rate VALUES(%s,%s,%s,%s,Null,Null)"
+            cursor.execute(query, (username, airline_name, dep_date, flight_number))
+        cursor.close()
+        return render_template('customer_home.html', username=username, success="Successful buy tickets")
 
 
 @app.route('/comment_and_rate', methods=['GET', 'POST'])
@@ -263,7 +281,16 @@ def track_spending():
     start_date = request.form["start_date"]
     end_date = request.form["end_date"]
     cursor = conn.cursor()
-    query = "SELECT total"
+    query = "SELECT sum(price) as total_spend, year(purchase_date_time) as year, month(purchase_date_time)as month" \
+            " from buy left join (select year, month from master.dobo.spt_values where type = 'p' and year between 1900 and 3000 and month between 1 and 12)where email =%s and date(purchase_date_time) between %s and %s " \
+            "group by year, month Order by year, month desc"
+    cursor.execute(query, (username, start_date, end_date))
+    cursor.close()
+    data1 = cursor.fetchall()
+    if not data1:
+        return render_template('customer_home.html', username=username, error4 = "No Spend found")
+    else:
+        return render_template('customer_home.html', username=username, track_spend = data1)
 
 
 # TODO: check

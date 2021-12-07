@@ -46,7 +46,7 @@
 			{% for line in posts1 %}
 			<tr>
 				<td>{{line['flight_number']}}</td>
-				<td>{{line['departure_date']}}</td>
+				<td>{{line['departure_date_time']}}</td>
 				<td>{{line['airline_name']}}</td>
 				<td>{{line['return_flight_number']}}</td>
 				<td>{{line['return_date']}}</td>
@@ -54,7 +54,7 @@
 			</tr>
 			{% endfor %}
 		</table>
-	<form></form>
+	</form>
 	<br></br>
 	<p> Check Flight Status:</p>
 	<form action="/See_status" method="POST">
@@ -77,6 +77,6 @@
 			</tr>
 			{% endfor %}
 		</table>
-	<form></form>
+	</form>
 
 </html>

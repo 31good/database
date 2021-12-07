@@ -57,7 +57,7 @@ def flight_search():
     return_date = request.form["return_date"]
     cursor = conn.cursor()
     if trip_type == "round":
-        query = "SELECT e.flight_number, date(e.departure_date_time) as departure_date, e.airline_name, " \
+        query = "SELECT e.flight_number, e.departure_date_time as departure_date, e.airline_name, " \
                 "f.flight_number as return_flight_number, date(f.departure_date_time) as return_date, " \
                 "f.airline_name as return_airline_name from(SELECT b.flight_number, b.departure_date_time, " \
                 "b.airline_name, arrival_date_time FROM Airport as a join Flight as b on b.depart_airport_code=a.code " \
@@ -71,11 +71,11 @@ def flight_search():
             source_airport,
             return_date))
     else:
-        query = 'SELECT b.flight_number, b.departure_date, b.airline_name, ""as return_flight_number, "" as return_date, ""as return_airline_name ' \
-                'FROM Airport as a join (select flight_number, date(departure_date_time) ' \
-                'as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
+        query = 'SELECT b.flight_number, b.departure_date_time, b.airline_name, ""as return_flight_number, "" as return_date, ""as return_airline_name ' \
+                'FROM Airport as a join (select flight_number, departure_date_time, ' \
+                'airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
                 'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
-                'and a.name=%s and c.city=%s and c.name=%s and b.departure_date = %s'
+                'and a.name=%s and c.city=%s and c.name=%s and date(b.departure_date_time) = %s'
         cursor.execute(query, (source_city, source_airport, des_city, des_airport, date))
     data = cursor.fetchall()
     cursor.close()
@@ -89,18 +89,35 @@ def flight_search():
 
 @app.route('/flight_search_home', methods=['GET', 'POST'])
 def flight_search_home():
+    trip_type = request.form['trip_type']
     source_city = request.form['source_city']
     source_airport = request.form['source_airport']
     des_city = request.form['des_city']
     des_airport = request.form['des_airport']
     date = request.form["departure_date"]
+    return_date = request.form["return_date"]
     cursor = conn.cursor()
-    query = 'SELECT b.flight_number, b.departure_date, b.airline_name ' \
-            'FROM Airport as a join (select flight_number, date(departure_date_time) ' \
-            'as departure_date, airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
-            'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
-            'and a.name=%s and c.city=%s and c.name=%s and b.departure_date = %s'
-    cursor.execute(query, (source_city, source_airport, des_city, des_airport, date))
+    if trip_type == "round":
+        query = "SELECT e.flight_number, e.departure_date_time as departure_date, e.airline_name, " \
+                "f.flight_number as return_flight_number, date(f.departure_date_time) as return_date, " \
+                "f.airline_name as return_airline_name from(SELECT b.flight_number, b.departure_date_time, " \
+                "b.airline_name, arrival_date_time FROM Airport as a join Flight as b on b.depart_airport_code=a.code " \
+                "join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s and a.name=%s and c.city=%s " \
+                "and c.name=%s and date(b.departure_date_time) = %s)e inner join(SELECT b.flight_number, " \
+                "b.departure_date_time, b.airline_name FROM Airport as a join Flight as b on b.depart_airport_code=a.code " \
+                "join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s and a.name=%s and c.city=%s " \
+                "and c.name=%s and date(b.departure_date_time) = %s)f on e.arrival_date_time < f.departure_date_time"
+        cursor.execute(query, (
+            source_city, source_airport, des_city, des_airport, date, des_city, des_airport, source_city,
+            source_airport,
+            return_date))
+    else:
+        query = 'SELECT b.flight_number, b.departure_date_time, b.airline_name, ""as return_flight_number, "" as return_date, ""as return_airline_name ' \
+                'FROM Airport as a join (select flight_number, departure_date_time, ' \
+                'airline_name, depart_airport_code, arrive_airport_code from Flight)as b ' \
+                'on b.depart_airport_code=a.code join Airport as c on b.arrive_airport_code=c.code WHERE a.city= %s ' \
+                'and a.name=%s and c.city=%s and c.name=%s and date(b.departure_date_time) = %s'
+        cursor.execute(query, (source_city, source_airport, des_city, des_airport, date))
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"
@@ -108,7 +125,7 @@ def flight_search_home():
         error = "No flight founded, please check your flight information"
         return render_template("customer_home.html", error1=error)
         ##error = "Error with the input"
-    return render_template("customer_home.html", Search_flight=data)
+    return render_template("customer_home.html", posts1=data)
 
 
 @app.route('/See_status', methods=['GET', 'POST'])
@@ -162,9 +179,8 @@ def customer_home(if_initial):
     cursor.execute(query, (username))
     data1 = cursor.fetchall()
     #TODO: 评论
-    query="SELECT flight_number,departure_date_time as dep, airline_name FROM buy natural join ticket " \
-          "WHERE email=%s dep<= now () " \
-          "(flight_number, departure_date_time, airline_name, email) not in (SELECT flight_number, departure_date_time, airline_name, email FROM rate)"
+    query= "SELECT b.flight_number,b.departure_date_time, b.airline_name FROM buy as a natural " \
+           "join ticket as b join rate as c WHERE a.email=%s and b.departure_date_time <= now() and c.rating is not null"
     cursor.execute(query,(username))
     data2 = cursor.fetchall()
     cursor.close()
@@ -200,8 +216,12 @@ def buy_ticket():
     ticket_id = cursor.fetchone()["ticket_id"]
     query = 'INSERT INTO buy VALUES(%s,%s,now(),%s,%s,%s,%s)'
     cursor.execute(query, (ticket_id, username, name_on_card, card_num, card_type,expir_date))
-    query="INSERT INTO rate VALUES(%s,%s,%s,%s,Null,Null)"
-    cursor.execute(query,(username,airline_name,dep_date,flight_number))
+    query = "select username from rate where username = %s and airline_name = %s and departure_date_time = %s and flight_number = %s"
+    cursor.execute(query, (username, airline_name, dep_date, flight_number))
+    data1 = cursor.fetchall()
+    if (not data1):
+        query="INSERT INTO rate VALUES(%s,%s,%s,%s,Null,Null)"
+        cursor.execute(query,(username,airline_name,dep_date,flight_number))
     cursor.close()
     return render_template('customer_home.html', username=username, success="Successful buy tickets")
 
@@ -653,13 +673,13 @@ def loginAuth():
     # cursor used to send queries
     cursor = conn.cursor()
     # executes query (check for customer)
-    query = 'SELECT * FROM customer WHERE email = %s and password = %s'
+    query = 'SELECT * FROM customer WHERE email = %s and password = md5(%s)'
     cursor.execute(query, (username, password))
     # stores the results in a variable
     data = cursor.fetchone()
     if (not data):
         isStaff = True
-        query = 'SELECT * FROM staff WHERE username = %s and password = %s'
+        query = 'SELECT * FROM staff WHERE username = %s and password = md5(%s)'
         cursor.execute(query, (username, password))
         # stores the results in a variable
         data = cursor.fetchone()
@@ -692,7 +712,7 @@ def registerAuth_staff():
     date_of_birth = request.form['date_of_birth']
     airline_name = request.form['airline_name']
     cursor = conn.cursor()
-    query = 'SELECT * FROM user WHERE username = %s'
+    query = 'SELECT * FROM staff WHERE username = %s'
     cursor.execute(query, (username))
     data = cursor.fetchone()
     error = "Error with the input"
@@ -701,7 +721,7 @@ def registerAuth_staff():
         error = "This user already exists"
         return render_template('register_staff.html', error=error)
     else:
-        ins = 'INSERT INTO staff VALUES(%s, %s, %s, %s,%s, %s)'
+        ins = 'INSERT INTO staff VALUES(%s, md5(%s), %s, %s,%s, %s)'
         cursor.execute(ins, (username, password, first_name, last_name, date_of_birth, airline_name))
         conn.commit()
         cursor.close()
@@ -732,7 +752,7 @@ def registerAuth_customer():
         error = "This user already exists"
         return render_template('register_customer.html', error=error)
     else:
-        ins = 'INSERT INTO Customer VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        ins = 'INSERT INTO Customer VALUES(%s, %s, md5(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         cursor.execute(ins, (
             email, name, password, building_number, street, city, state, phone_number, passport_number,
             passport_expiration,

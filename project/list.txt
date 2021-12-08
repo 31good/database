@@ -36,5 +36,7 @@ round trip(search flights), home_search_flights
 track my spending
 view reports
 customer 更新的问题
+fetchone的问题
+
 1.更改数据库的问题
 2. 默认add flight 只能用当前airline 的 airplane id

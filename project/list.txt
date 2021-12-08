@@ -27,7 +27,7 @@ CUSTOMER:
 View my flights✔
 Search flights✔
 purchase tickets ✔
-give rating 
+give rating (not commented yet 航班会重复出现)
 track my spending✔
 log out ✔
 

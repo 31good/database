@@ -73,7 +73,9 @@
         <p class="error4" style="color:red"><strong>Error:</strong> {{error4}}</p>
         {% endif %}
     </form>
-    <header>Your monthwise spending from {{start_date}} to {{end_date}}</header>
+    {% if start_date %}
+			<p>Your monthwise spending from {{start_date}} to {{end_date}}</p>
+    {% endif %}
     <table>
         <th>Year</th>
         <th>Month</th>

@@ -220,15 +220,19 @@
         <p class="error6" style="color:red"><strong>Error:</strong> {{error6}}</p>
         {% endif %}
     </form>
-    <!--- 怎么monthwise--->
     <p>Report</p>
+    {% if start_date %}
+        <p>from {{start_date}} to {{end_date}}</p>
+    {% endif %}
     <table>
-        <th>Month</th>
-        <th>Amount of tickets sold</th>
+        <th>year</th>
+        <th>month</th>
+        <th>tickets sold</th>
         {% for line in ticket_sold %}
         <tr>
-            <td>{{line[0]}}</td>
-            <td>{{line[0]}}</td>
+            <td>{{line["year"]}}</td>
+            <td>{{line["month"]}}</td>
+            <td>{{line["ticket_count"]}}</td>
         </tr>
         {% endfor %}
     </table>

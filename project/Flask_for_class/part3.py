@@ -80,7 +80,7 @@ def flight_search():
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"
-    if (len(data) == 0):
+    if (not data):
         error = "No flight founded, please check your flight information"
         return render_template("index.html", error1=error)
         ##error = "Error with the input"
@@ -121,10 +121,9 @@ def flight_search_home():
     data = cursor.fetchall()
     cursor.close()
     ##error = "Error with the input"
-    if (len(data) == 0):
+    if (not data):
         error = "No flight founded, please check your flight information"
         return render_template("customer_home.html", error1=error)
-        ##error = "Error with the input"
     return render_template("customer_home.html", posts1=data)
 
 
@@ -346,45 +345,22 @@ def get_staff_home_data():
     cursor.execute(query, (airline))
     data3 = cursor.fetchall()
     # 找ticket的价格 (上个月)
-    query = "SELECT count(ticket_id) AS count, base_price, num_seats " \
-            "FROM buy natural join ticket natural join flight natural join airplane " \
-            "WHERE airline_name = %s and purchase_date_time between (SELECT DATE_ADD(now(), INTERVAL-1 MONTH )) and now()" \
-            "GROUP BY flight_number,departure_date_time,airline_name"
+    query="SELECT sum(price) AS sum FROM buy natural join ticket WHERE airline_name=%s and " \
+          "purchase_date_time between (SELECT DATE_ADD(now(), INTERVAL-1 MONTH )) and now()"
     cursor.execute(query, (airline))
-    data4 = cursor.fetchall()
-    sum_month = 0
-    for row in data4:
-        count = row["count"]
-        base_price = row["base_price"]
-        num_seats = row["num_seats"]
-        if (count > num_seats * 0.75):
-            normal = int(num_seats * 0.75)
-            sum_month += (normal * base_price + (count - normal) * (base_price * 1.25))
-        else:
-            sum_month += count * base_price
+    sum_month = cursor.fetchone()["sum"]
     # 找ticket的价格 (上一年)
-    query = "SELECT count(ticket_id) AS count, base_price, num_seats " \
-            "FROM buy natural join ticket natural join flight natural join airplane " \
-            "WHERE airline_name = %s and purchase_date_time between (SELECT DATE_ADD(now(), INTERVAL-1 YEAR )) and now()" \
-            "GROUP BY flight_number,departure_date_time,airline_name"
+    query="SELECT sum(price) AS sum FROM buy natural join ticket WHERE airline_name=%s and " \
+          "purchase_date_time between (SELECT DATE_ADD(now(), INTERVAL-1 YEAR )) and now()"
     cursor.execute(query, (airline))
-    data5 = cursor.fetchall()
-    sum_year = 0
-    print(data5)
-    for row in data5:
-        count = row["count"]
-        base_price = row["base_price"]
-        num_seats = row["num_seats"]
-        print(count, base_price, num_seats)
-        if (count > num_seats * 0.75):
-            normal = int(num_seats * 0.75)
-            sum_year += (normal * base_price + (count - normal) * (base_price * 1.25))
-        else:
-            sum_year += count * base_price
+    sum_year = cursor.fetchone()["sum"]
     # most frequent customer
     query = "SELECT count(*) as count, email FROM buy GROUP BY email ORDER BY count DESC LIMIT 1"
     cursor.execute(query)
-    email = cursor.fetchone()["email"]
+    if(not cursor.fetchone()):
+        email="No Customer Buy Tickets for this Flight"
+    else:
+        email = cursor.fetchone()["email"]
     query = "SELECT flight_number, departure_date_time " \
             "FROM buy natural join ticket WHERE email = %s and airline_name=%s"
     cursor.execute(query, (email, airline))
@@ -414,6 +390,11 @@ def search_flights_staff():
     cursor = conn.cursor()
     cursor.execute(query, (airline_name, start_date, end_date))
     data = cursor.fetchall()
+    if(not data):
+        return render_template("staff_home.html", search_flights=data, username=username, airline_fights=data1,
+                           destination_3_months=data2,
+                           destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                           customer_name=email, customer_flights=data6, owned_airplane=data7,post1="No Flight Found")
     return render_template("staff_home.html", search_flights=data, username=username, airline_fights=data1,
                            destination_3_months=data2,
                            destination_year=data3, sum_month=sum_month, sum_year=sum_year,
@@ -528,7 +509,7 @@ def create_new_flights():
     query="SELECT * FROM airplane WHERE airplane_id = %s and airline_name=%s"
     cursor.execute(query,(airplane_id,airline_name))
     if(not cursor.fetchone()):
-        error= "Airplane ID not exist"
+        error= "Airplane ID not exist for this airline"
         return render_template('staff_home.html', error4=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
@@ -557,7 +538,10 @@ def create_new_flights():
         arrival_airport_code))
     query = "SELECT max(ticket_id) AS max FROM ticket"
     cursor.execute(query)
-    ticket_id_max = int(cursor.fetchone()["max"])
+    if(not cursor.fetchone()):
+        ticket_id_max=0
+    else:
+        ticket_id_max = int(cursor.fetchone()["max"])
     query = "SELECT num_seats FROM airplane WHERE airplane_id=%s"
     cursor.execute(query, airplane_id)
     num_seats = cursor.fetchone()["num_seats"]
@@ -639,13 +623,20 @@ def view_rating():
     dep_date = request.form["departure_date"]
     dep_date = dep_date.replace("T", " ") + ":00"
     cursor = conn.cursor()
-    query = 'SELECT avg(rating) AS avg FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s'
+    query = 'SELECT avg(rating) AS avg FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s and comment is not Null'
     cursor.execute(query, (flight_number, dep_date,airline_name))
-    avg = format(cursor.fetchone()["avg"],".2f")
-    query = "SELECT rating, comment FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s"
+    data=cursor.fetchone()
+    if(data["avg"]==None):
+        return render_template("staff_home.html", post3="No Rating and Comment for this Flight", rating_comment=data, username=username,
+                               airline_fights=data1,
+                               destination_3_months=data2,
+                               destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                               customer_name=email, customer_flights=data6, owned_airplane=data7)
+    avg = format(data["avg"],".2f")
+    query = "SELECT rating, comment FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s and comment is not Null"
     cursor.execute(query, (flight_number, dep_date,airline_name))
     data = cursor.fetchall()
-    print(data,avg)
+    #print(data,avg)
     return render_template("staff_home.html", average=avg, rating_comment=data, username=username, airline_fights=data1,
                            destination_3_months=data2,
                            destination_year=data3, sum_month=sum_month, sum_year=sum_year,
@@ -681,6 +672,11 @@ def find_customer():
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()
+    if(not data):
+        return render_template("staff_home.html", customers=data, username=username, airline_fights=data1,
+                               destination_3_months=data2,
+                               destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                               customer_name=email, customer_flights=data6, owned_airplane=data7,post2="No Customer in the Flight")
     return render_template("staff_home.html", customers=data, username=username, airline_fights=data1,
                            destination_3_months=data2,
                            destination_year=data3, sum_month=sum_month, sum_year=sum_year,
@@ -792,7 +788,7 @@ def registerAuth_customer():
     else:
         ins = 'INSERT INTO Customer VALUES(%s, %s, md5(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         cursor.execute(ins, (
-            email, name, password, building_number, street, city, state, phone_number, passport_number,
+            email, name, password,building_number, street, city, state, phone_number, passport_number,
             passport_expiration,
             passport_country, date_of_birth))
         conn.commit()
@@ -800,32 +796,6 @@ def registerAuth_customer():
         return render_template('login.html')
 
 
-# Authenticates the register
-@app.route('/registerAuth', methods=['GET', 'POST'])
-def registerAuth():
-    # grabs information from the forms
-    username = request.form['username']
-    password = request.form['password']
-
-    # cursor used to send queries
-    cursor = conn.cursor()
-    # executes query
-    query = 'SELECT * FROM user WHERE username = %s'
-    cursor.execute(query, (username))
-    # stores the results in a variable
-    data = cursor.fetchone()
-    # use fetchall() if you are expecting more than 1 data row
-    error = None
-    if (data):
-        # If the previous query returns data, then user exists
-        error = "This user already exists"
-        return render_template('register.html', error=error)
-    else:
-        ins = 'INSERT INTO user VALUES(%s, %s)'
-        cursor.execute(ins, (username, password))
-        conn.commit()
-        cursor.close()
-        return render_template('index.html')
 
 
 # customer login behave

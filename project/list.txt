@@ -1,9 +1,6 @@
 round trip searching for customer
 solved: view flights in staff (可以看current future past flights)
 
-明天问 password的问题
-
-insert to rate 要改
 实现的:
 
 home:

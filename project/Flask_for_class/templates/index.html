@@ -27,7 +27,7 @@
 		</br>
 		<input type="submit" value=Search />
 		{% if error1 %}
-			<p class="error1"><strong>Error:</strong> {{error1}}</p>
+			<p class="error1" style="color:red">{{error1}}</p>
 		{% endif %}
 		<style type="text/css">
 			table,
@@ -64,7 +64,7 @@
 		<input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
 		<input type="submit" value=Search />
 		{% if error2 %}
-			<p class="error2"><strong>Error:</strong> {{error2}}</p>
+			<p class="error2" style="color:red"><strong>Error:</strong> {{error2}}</p>
 		{% endif %}
 		<table>
 			<th>Status: {{status}}</th>

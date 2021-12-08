@@ -96,6 +96,7 @@ def flight_search_home():
     des_airport = request.form['des_airport']
     date = request.form["departure_date"]
     return_date = request.form["return_date"]
+    booked_flight, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home("Future")
     cursor = conn.cursor()
     if trip_type == "round":
         query = "SELECT e.flight_number, e.departure_date_time as departure_date, e.airline_name, " \
@@ -123,8 +124,10 @@ def flight_search_home():
     ##error = "Error with the input"
     if (not data):
         error = "No flight founded, please check your flight information"
-        return render_template("customer_home.html", error1=error)
-    return render_template("customer_home.html", posts1=data)
+        return render_template("customer_home.html", error1=error, future_flight=booked_flight, flight_type=flight_type, not_commented_flights=data2,
+                               last_6_month_spend=last_6_month_spend,past_year_spend=past_year_spend)
+    return render_template("customer_home.html", posts1=data, future_flight=booked_flight, flight_type=flight_type, not_commented_flights=data2,
+                               last_6_month_spend=last_6_month_spend,past_year_spend=past_year_spend)
 
 
 @app.route('/See_status', methods=['GET', 'POST'])
@@ -148,15 +151,10 @@ def See_status():
     ##error = "Error with the input"
     return render_template("index.html", status=data["status"])
 
-
-@app.route('/customer_home/<int:if_initial>', methods=['GET', 'POST'])
-def customer_home(if_initial):
+def get_customer_home(status):
     username = session['username']
     cursor = conn.cursor()
-    if if_initial == 0:
-        flight_type = request.form['flight_type']
-    else:
-        flight_type = "Future"
+    flight_type = status
     if flight_type == "All":
         query = "SELECT flight_number,departure_date_time as dep,airline_name, buy.ticket_id " \
                 "FROM customer natural join buy natural join ticket " \
@@ -175,11 +173,8 @@ def customer_home(if_initial):
             "join ticket as b natural join rate as c WHERE a.email=%s and b.departure_date_time <= now() and c.rating is null"
     cursor.execute(query, (username))
     data2 = cursor.fetchall()
-    query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend " \
-            "from (select distinct year(date) as year, month(date) as month " \
-            "from calendar where date between DATE_ADD(now(), INTERVAL-12 MONTH) and now() group by month)as a " \
-            "left join (select * from buy where email = %s and date(purchase_date_time) between DATE_ADD(now(), INTERVAL-12 MONTH) and now())as b " \
-            "on a.year = year(b.purchase_date_time) and a.month = month(b.purchase_date_time)"
+    query = "SELECT sum(price) as total_spend " \
+            "from buy where email = %s and date(purchase_date_time) between DATE_ADD(now(), INTERVAL-12 MONTH) and now() "
     cursor.execute(query, (username))
     past_year_spend = cursor.fetchone()["total_spend"]
     query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend, " \
@@ -190,6 +185,16 @@ def customer_home(if_initial):
     cursor.execute(query, (username))
     last_6_month_spend = cursor.fetchall()
     cursor.close()
+    return data1, flight_type,data2, last_6_month_spend,past_year_spend
+
+@app.route('/customer_home/<int:if_initial>', methods=['GET', 'POST'])
+def customer_home(if_initial):
+    username = session['username']
+    if if_initial == 0:
+        flight_type = request.form['flight_type']
+    else:
+        flight_type = "Future"
+    data1, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home(flight_type)
     return render_template('customer_home.html', username=username, future_flight=data1, flight_type=flight_type,
                            not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
                            past_year_spend=past_year_spend)
@@ -200,6 +205,7 @@ def customer_home(if_initial):
 def buy_ticket():
     username = session['username']
     card_type = request.form["card"]
+    booked_flight, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home("Future")
     if (not card_type):
         error = "Please check the box for card type"
         return render_template('customer_home.html', username=username, error2=error)
@@ -223,7 +229,9 @@ def buy_ticket():
     cursor.execute(query, (flight_number, dep_date, airline_name))
     ticket_id = cursor.fetchone()["ticket_id"]
     if not ticket_id:
-        return render_template('customer_home.html', username=username, fault="the flight is full")
+        return render_template('customer_home.html', username=username, fault="the flight is full", future_flight=booked_flight, flight_type=flight_type,
+                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                           past_year_spend=past_year_spend)
     else:
         query = "SELECT count(distinct ticket_id) as remain, num_seats FROM ticket natural join airplane natural join flight " \
                 "WHERE flight_number=%s and departure_date_time=%s and airline_name=%s and ticket_id not in (SELECT ticket_id FROM buy) group by num_seats"
@@ -250,7 +258,9 @@ def buy_ticket():
             query = "INSERT INTO rate VALUES(%s,%s,%s,%s,Null,Null)"
             cursor.execute(query, (username, airline_name, dep_date, flight_number))
         cursor.close()
-        return render_template('customer_home.html', username=username, success="Successful buy tickets")
+        return render_template('customer_home.html', username=username, success="Successful buy tickets", future_flight=booked_flight, flight_type=flight_type,
+                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                           past_year_spend=past_year_spend)
 
 
 @app.route('/comment_and_rate', methods=['GET', 'POST'])
@@ -262,6 +272,7 @@ def comment_and_rate():
     dep_date = dep_date.replace("T", " ") + ":00"
     comment = request.form["comment"]
     rate = request.form["rate"]
+    booked_flight, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home("Future")
     cursor = conn.cursor()
     query = "SELECT flight_number,departure_date_time,airline_name FROM flight " \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
@@ -269,18 +280,24 @@ def comment_and_rate():
     data = cursor.fetchall()
     if (not data):
         error = "Please check the flight information"
-        return render_template('customer_home.html', username=username, error3=error)
+        return render_template('customer_home.html', username=username, error3=error, future_flight=booked_flight, flight_type=flight_type,
+                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                           past_year_spend=past_year_spend)
     query = "SELECT flight_number,departure_date_time,airline_name FROM rate " \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s and email=%s and comment is not Null"
     cursor.execute(query, (flight_number, airline_name, dep_date, username))
     data = cursor.fetchall()
     if (data):
         error = "You have already commented or rated this flight"
-        return render_template('customer_home.html', username=username, error3=error)
+        return render_template('customer_home.html', username=username, error3=error, future_flight=booked_flight, flight_type=flight_type,
+                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                           past_year_spend=past_year_spend)
     query = 'UPDATE rate SET rating=%s, comment=%s WHERE email=%s and airline_name=%s and departure_date_time=%s and flight_number=%s'
     cursor.execute(query, (rate, comment, username, airline_name, dep_date, flight_number))
     cursor.close()
-    return render_template('customer_home.html', username=username, success="Successful rate and commented")
+    return render_template('customer_home.html', username=username, success="Successful rate and commented", future_flight=booked_flight, flight_type=flight_type,
+                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                           past_year_spend=past_year_spend)
 
 
 @app.route('/track_spending', methods=['GET', 'POST'])
@@ -288,21 +305,23 @@ def track_spending():
     username = session["username"]
     start_date = request.form["start_date"]
     end_date = request.form["end_date"]
+    booked_flight, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home("Future")
     cursor = conn.cursor()
-    query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend, " \
-            "a.year, a.month from (select distinct year(date) as year, month(date) as month " \
-            "from calendar where date between %s and %s group by month)as a " \
-            "left join (select * from buy where email = %s and date(purchase_date_time) between %s and %s)as b " \
-            "on a.year = year(b.purchase_date_time) and a.month = month(b.purchase_date_time) group by year,month Order by year, month desc"
-    cursor.execute(query, (start_date, end_date, username, start_date, end_date))
+    query = "SELECT sum(case when price is not null then price else 0 end) as total_spend, " \
+            "year(purchase_date_time) as year, month(purchase_date_time) as month from buy where email = %s and date(purchase_date_time) between %s and %s " \
+            "group by year,month Order by year, month desc"
+    cursor.execute(query, (username, start_date, end_date))
     cursor.close()
     data1 = cursor.fetchall()
+    data1 = fill_month(start_date, end_date, "total_spend", data1)
     if not data1:
-        return render_template('customer_home.html', username=username, error4="No Spend found", start_date=start_date,
-                               end_date=end_date)
+        return render_template('customer_home.html', username=username, error4="No Spend found, please check the information", start_date=start_date,
+                               end_date=end_date, future_flight=booked_flight, flight_type=flight_type, not_commented_flights=data2,
+                               last_6_month_spend=last_6_month_spend,past_year_spend=past_year_spend)
     else:
         return render_template('customer_home.html', username=username, track_spend=data1, start_date=start_date,
-                               end_date=end_date)
+                               end_date=end_date, future_flight=booked_flight, flight_type=flight_type, not_commented_flights=data2,
+                               last_6_month_spend=last_6_month_spend,past_year_spend=past_year_spend)
 
 
 # TODO: check
@@ -604,16 +623,76 @@ def change_status():
 @app.route('/view_reports', methods=['GET', 'POST'])
 def view_reports():
     username, data1, data2, data3, sum_month, sum_year, email, data6, data7 = get_staff_home_data()
+    airline_name = get_airline_name()
     start_date = request.form["start_date"]
     end_date = request.form["end_date"]
+    cursor = conn.cursor()
+    query = "SELECT count(price) as ticket_count, " \
+            "year(purchase_date_time) as year, month(purchase_date_time) as month from buy natural join ticket " \
+            "where airline_name = %s and date(purchase_date_time) between %s and %s " \
+            "group by year, month Order by year, month desc"
+    cursor.execute(query, (airline_name, start_date, end_date))
+    ticket_sold = cursor.fetchall()
+    ticket_sold = fill_month(start_date, end_date, "ticket_count", ticket_sold)
+    cursor.close()
     error = Auth_staff()
     if (error != None):
-        return render_template('staff_home.html', error6=error, username=username, airline_fights=data1,
-                               destination_3_months=data2,
+        return render_template('staff_home.html', error6=error, username=username,
+                               airline_fights=data1, destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
-    cursor = conn.cursor()
-    # TODO: 每个月的!!!!
+    return render_template('staff_home.html', username=username, ticket_sold = ticket_sold, start_date = start_date, end_date = end_date,
+                               airline_fights=data1, destination_3_months=data2,
+                               destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                               customer_name=email, customer_flights=data6, owned_airplane=data7)
+
+def fill_month(start_date, end_date, variable, lst):
+    if start_date<end_date:
+        return lst
+    else:
+        start_year = int(start_date[0:4])
+        start_month = int(start_date[5:7])
+        end_year = int(end_date[0:4])
+        end_month = int(end_date[5:7])
+        curr_year = start_year
+        curr_month = start_month
+        if_end = False;
+        if_exist = False;
+        result = []
+        while if_end == False:
+            if curr_year == end_year and curr_month == end_month:
+                for dic in lst:
+                    if dic["year"] == curr_year and dic["month"] == curr_month:
+                        result.insert(0, dic)
+                        if_exist = True;
+                        break
+                if if_exist == False:
+                    new_dic = {}
+                    new_dic["year"] = curr_year
+                    new_dic["month"] = curr_month
+                    new_dic[variable] = 0
+                    result.insert(0, new_dic)
+                if_exist = False
+                if_end = True
+            else:
+                for dic in lst:
+                    if dic["year"] == curr_year and dic["month"] == curr_month:
+                        result.insert(0, dic)
+                        if_exist = true;
+                        break
+                if if_exist == False:
+                    new_dic = {}
+                    new_dic["year"] = curr_year
+                    new_dic["month"] = curr_month
+                    new_dic[variable] = 0
+                    result.insert(0, new_dic)
+                    if curr_month < 12:
+                        curr_month += 1
+                    else:
+                        curr_year += 1
+                        curr_month = 1
+                if_exist = False
+        return result
 
 
 @app.route('/view_rating', methods=['GET', 'POST'])

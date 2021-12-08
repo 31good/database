@@ -27,7 +27,7 @@ CUSTOMER:
 View my flights✔
 Search flights✔
 purchase tickets ✔
-give rating ✔
+give rating 
 track my spending✔
 log out ✔
 

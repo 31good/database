@@ -172,7 +172,7 @@ def customer_home(if_initial):
     cursor.execute(query, (username))
     data1 = cursor.fetchall()
     query = "SELECT b.flight_number,b.departure_date_time, b.airline_name FROM buy as a natural " \
-            "join ticket as b join rate as c WHERE a.email=%s and b.departure_date_time <= now() and c.rating is not null"
+            "join ticket as b natural join rate as c WHERE a.email=%s and b.departure_date_time <= now() and c.rating is null"
     cursor.execute(query, (username))
     data2 = cursor.fetchall()
     query = "SELECT sum(case when b.price is not null then b.price else 0 end) as total_spend " \

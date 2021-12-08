@@ -233,7 +233,7 @@ def buy_ticket():
                            not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
                            past_year_spend=past_year_spend)
     else:
-        ticket_id = ticked_id["ticket_id"]
+        ticket_id = ticket_id["ticket_id"]
         query = "SELECT count(distinct ticket_id) as remain, num_seats FROM ticket natural join airplane natural join flight " \
                 "WHERE flight_number=%s and departure_date_time=%s and airline_name=%s and ticket_id not in (SELECT ticket_id FROM buy) group by num_seats"
         cursor.execute(query, (flight_number, dep_date, airline_name))
@@ -678,7 +678,7 @@ def fill_month(start_date, end_date, variable, lst):
                 for dic in lst:
                     if dic["year"] == curr_year and dic["month"] == curr_month:
                         result.insert(0, dic)
-                        if_exist = true;
+                        if_exist = True
                         break
                 if if_exist == False:
                     new_dic = {}

@@ -222,6 +222,7 @@ def buy_ticket():
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()
     if (not data):
+        cursor.close()
         error = "Please check the flight information"
         return render_template('customer_home.html', username=username, error2=error)
     query = "SELECT ticket_id FROM ticket WHERE flight_number=%s and departure_date_time=%s " \
@@ -229,6 +230,7 @@ def buy_ticket():
     cursor.execute(query, (flight_number, dep_date, airline_name))
     ticket_id = cursor.fetchone()
     if not ticket_id:
+        cursor.close()
         return render_template('customer_home.html', username=username, fault="the flight is full", future_flight=booked_flight, flight_type=flight_type,
                            not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
                            past_year_spend=past_year_spend)
@@ -279,6 +281,7 @@ def comment_and_rate():
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()
     if (not data):
+        cursor.close()
         error = "Please check the flight information"
         return render_template('customer_home.html', username=username, error3=error, future_flight=booked_flight, flight_type=flight_type,
                            not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
@@ -288,6 +291,7 @@ def comment_and_rate():
     cursor.execute(query, (flight_number, airline_name, dep_date, username))
     data = cursor.fetchall()
     if (data):
+        cursor.close()
         error = "You have already commented or rated this flight"
         return render_template('customer_home.html', username=username, error3=error, future_flight=booked_flight, flight_type=flight_type,
                            not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
@@ -414,6 +418,7 @@ def search_flights_staff():
     cursor = conn.cursor()
     cursor.execute(query, (airline_name, start_date, end_date))
     data = cursor.fetchall()
+    cursor.close()
     if (not data):
         return render_template("staff_home.html", search_flights=data, username=username, airline_fights=data1,
                                destination_3_months=data2,
@@ -443,6 +448,7 @@ def create_new_airport():
     cursor.execute(query, (code))
     data = cursor.fetchone()
     if (data):
+        cursor.close()
         error = "That code for airport has already existed"
         return render_template('staff_home.html', error2=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
@@ -451,6 +457,7 @@ def create_new_airport():
 
     query = 'INSERT INTO airport VALUES(%s,%s,%s)'
     cursor.execute(query, (code, airport_name, city))
+    cursor.close()
     return render_template("staff_home.html", success="Successful added Airport", username=username,
                            airline_fights=data1,
                            destination_3_months=data2,
@@ -476,6 +483,7 @@ def create_new_airplane():
     cursor.execute(query, (airline_name))
     data = cursor.fetchone()
     if (not data):
+        cursor.close()
         error = "That airline does not exist"
         return render_template('staff_home.html', error3=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
@@ -485,6 +493,7 @@ def create_new_airplane():
     cursor.execute(query, (airline_name, id))
     data = cursor.fetchone()
     if (data):
+        cursor.close()
         error = "That code of airplane has already existed for that airline"
         return render_template('staff_home.html', error3=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
@@ -492,6 +501,7 @@ def create_new_airplane():
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
     query = 'INSERT INTO airplane VALUES(%s,%s,%s)'
     cursor.execute(query, (airline_name, id, num_seats))
+    cursor.close()
     username, data1, data2, data3, sum_month, sum_year, email, data6, data7 = get_staff_home_data()
     return render_template("staff_home.html", success="Successful added airplane", username=username,
                            airline_fights=data1,
@@ -526,6 +536,7 @@ def create_new_flights():
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()
     if (data):
+        cursor.close()
         error = "Please check flight information it repeat with other flights"
         return render_template('staff_home.html', error4=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
@@ -534,6 +545,7 @@ def create_new_flights():
     query = "SELECT * FROM airplane WHERE airplane_id = %s and airline_name=%s"
     cursor.execute(query, (airplane_id, airline_name))
     if (not cursor.fetchone()):
+        cursor.close()
         error = "Airplane ID not exist for this airline"
         return render_template('staff_home.html', error4=error, username=username, airline_fights=data1,
                                destination_3_months=data2,
@@ -543,6 +555,7 @@ def create_new_flights():
     cursor.execute(query, (depart_airport_code))
     data = cursor.fetchall()
     if (not data):
+        cursor.close()
         error = "Departure airport code not exist"
         return render_template('staff_home.html', username=username, error4=error, airline_fights=data1,
                                destination_3_months=data2,
@@ -552,6 +565,7 @@ def create_new_flights():
     cursor.execute(query, (arrival_airport_code))
     data = cursor.fetchall()
     if (not data):
+        cursor.close()
         error = "Arrival airport code not exist"
         return render_template('staff_home.html', username=username, error4=error, airline_fights=data1,
                                destination_3_months=data2,
@@ -577,6 +591,7 @@ def create_new_flights():
         new_ticket_id = str(new_ticket_id).rjust(20, "0")
         cursor.execute(query, (new_ticket_id, flight_number, dep_date, airline_name))
     username, data1, data2, data3, sum_month, sum_year, email, data6, data7 = get_staff_home_data()
+    cursor.close()
     return render_template("staff_home.html", success="Successful added flight", username=username,
                            airline_fights=data1,
                            destination_3_months=data2,
@@ -605,6 +620,7 @@ def change_status():
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()
     if (not data):
+        cursor.close()
         error = "No flight founded, please check your flight information"
         return render_template('staff_home.html', username=username, error5=error, airline_fights=data1,
                                destination_3_months=data2,
@@ -713,6 +729,7 @@ def view_rating():
     cursor.execute(query, (flight_number, dep_date, airline_name))
     data = cursor.fetchone()
     if (data["avg"] == None):
+        cursor.close()
         return render_template("staff_home.html", post3="No Rating and Comment for this Flight", rating_comment=data,
                                username=username,
                                airline_fights=data1,
@@ -723,6 +740,7 @@ def view_rating():
     query = "SELECT rating, comment FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s and comment is not Null"
     cursor.execute(query, (flight_number, dep_date, airline_name))
     data = cursor.fetchall()
+    cursor.close()
     # print(data,avg)
     return render_template("staff_home.html", average=avg, rating_comment=data, username=username, airline_fights=data1,
                            destination_3_months=data2,
@@ -748,6 +766,7 @@ def find_customer():
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()
     if (not data):
+        cursor.close()
         error = "Please check the flight information"
         return render_template('staff_home.html', username=username, error1=error, airline_fights=data1,
                                destination_3_months=data2,
@@ -759,6 +778,7 @@ def find_customer():
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s"
     cursor.execute(query, (flight_number, airline_name, dep_date))
     data = cursor.fetchall()
+    cursor.close()
     if (not data):
         return render_template("staff_home.html", customers=data, username=username, airline_fights=data1,
                                destination_3_months=data2,
@@ -840,6 +860,7 @@ def registerAuth_staff():
     error = "Error with the input"
     if (data):
         # If the previous query returns data, then user exists
+        cursor.close()
         error = "This user already exists"
         return render_template('register_staff.html', error=error)
     else:
@@ -871,6 +892,7 @@ def registerAuth_customer():
     error = "Error with the information typed in"
     if (data):
         # If the previous query returns data, then user exists
+        cursor.close()
         error = "This user already exists"
         return render_template('register_customer.html', error=error)
     else:

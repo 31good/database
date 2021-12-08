@@ -227,12 +227,13 @@ def buy_ticket():
     query = "SELECT ticket_id FROM ticket WHERE flight_number=%s and departure_date_time=%s " \
             "and airline_name=%s and ticket_id not in (SELECT ticket_id FROM buy) LIMIT 1"
     cursor.execute(query, (flight_number, dep_date, airline_name))
-    ticket_id = cursor.fetchone()["ticket_id"]
+    ticket_id = cursor.fetchone()
     if not ticket_id:
         return render_template('customer_home.html', username=username, fault="the flight is full", future_flight=booked_flight, flight_type=flight_type,
                            not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
                            past_year_spend=past_year_spend)
     else:
+        ticket_id = ticked_id["ticket_id"]
         query = "SELECT count(distinct ticket_id) as remain, num_seats FROM ticket natural join airplane natural join flight " \
                 "WHERE flight_number=%s and departure_date_time=%s and airline_name=%s and ticket_id not in (SELECT ticket_id FROM buy) group by num_seats"
         cursor.execute(query, (flight_number, dep_date, airline_name))
@@ -247,8 +248,7 @@ def buy_ticket():
         base_price = cursor.fetchone()["base_price"]
         query = 'INSERT INTO buy VALUES(%s,%s,now(),%s,%s,%s,%s, %s)'
         if remain / num_seats <= 0.25:
-            cursor.execute(query,
-                           (ticket_id, username, name_on_card, card_num, card_type, expir_date, base_price * 1.25))
+            cursor.execute(query,(ticket_id, username, name_on_card, card_num, card_type, expir_date, base_price * 1.25))
         else:
             cursor.execute(query, (ticket_id, username, name_on_card, card_num, card_type, expir_date, base_price))
         query = "select email from rate where email = %s and airline_name = %s and departure_date_time = %s and flight_number = %s"

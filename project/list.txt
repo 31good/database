@@ -1,0 +1,36 @@
+round trip searching for customer
+solved: view flights in staff (可以看current future past flights)
+
+明天问 password的问题
+
+insert to rate 要改
+实现的:
+
+home:
+register ✔
+login ✔
+see status✔
+search flight✔
+
+
+STAFF：
+Airplane added ✔
+Airport added ✔
+Change status ✔
+Earned revenue ✔
+top destinations ✔
+log out ✔
+frequent customers ✔
+Add new flight ✔ (airplane 可不可以租借别人的)
+view flight ✔
+flight rating✔
+
+view reports
+
+CUSTOMER:
+View my flights✔
+Search flights
+purchase tickets ✔
+give rating 
+track my spending
+log out ✔

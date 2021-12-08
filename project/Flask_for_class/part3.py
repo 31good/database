@@ -133,27 +133,21 @@ def See_status():
     # TODO: check
     airline_name = request.form['airline_name']
     flight_number = request.form['flight_number']
-    arrival_date = request.form['arrival_date']
-    departure_date = request.form['departure_date']
-    # time_format = '%Y-%m-%dT%H:%M:%S'
-    # arrival_date=time.strptime(arrival_date+":00",time_format)
-    # departure_date=time.strptime(departure_date+":00",time_format)
-    # print(arrival_date)
-    # print()
+    dep_date = request.form['departure_date']
+    dep_date = dep_date.replace("T", " ") + ":00"
     cursor = conn.cursor()
     query = 'SELECT a.status FROM ' \
-            '(select status, flight_number, date(departure_date_time) as departure_date, ' \
-            'date(arrival_date_time) as arrival_date, airline_name from flight)as a ' \
-            'WHERE a.flight_number = %s and a.departure_date=%s and a.airline_name=%s ' \
-            'and a.arrival_date=%s'
-    cursor.execute(query, (flight_number, departure_date, airline_name, arrival_date))
-    data = cursor.fetchall()
+            '(select status, flight_number, departure_date_time, ' \
+            'airline_name from flight)as a ' \
+            'WHERE a.flight_number = %s and a.departure_date_time=%s and a.airline_name=%s '
+    cursor.execute(query, (flight_number, dep_date, airline_name))
+    data = cursor.fetchone()
     cursor.close()
-    if (len(data) == 0):
+    if (not data):
         error = "No flight founded, please check your flight information"
         return render_template("index.html", error2=error)
     ##error = "Error with the input"
-    return render_template("index.html", posts2=data)
+    return render_template("index.html", status=data["status"])
 
 
 @app.route('/customer_home/<int:if_initial>', methods=['GET', 'POST'])

@@ -61,21 +61,13 @@
 		<input type="text" name="airline_name" placeholder="airline name" required /> </br>
 		<input type="int" name="flight_number" placeholder="flight number" required /></br>
 		<head>Departure date:</head>
-		<input type="date" name="departure_date" placeholder="departure date" required /></br>
-		<head>Arrival date:</head>
-		<input type="date" name="arrival_date" placeholder="arrival date" required /></br>
+		<input type="datetime-local" name="departure_date" placeholder="departure date" required /></br>
 		<input type="submit" value=Search />
 		{% if error2 %}
 			<p class="error2"><strong>Error:</strong> {{error2}}</p>
 		{% endif %}
 		<table>
-			<th>Status</th>
-			<!--- TODO--->
-			{% for line in posts2 %}
-			<tr>
-				<td>{{line['status']}}</td>
-			</tr>
-			{% endfor %}
+			<th>Status: {{status}}</th>
 		</table>
 	</form>
 

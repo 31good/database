@@ -1,8 +1,7 @@
 round trip searching for customer
 solved: view flights in staff (可以看current future past flights)
 
-实现的:
-
+实现的
 home:
 register ✔
 login ✔
@@ -21,13 +20,16 @@ frequent customers ✔
 Add new flight ✔ (airplane 可不可以租借别人的)
 view flight ✔
 flight rating✔
-
 view reports
 
 CUSTOMER:
+(更新之后原来的数据会消失)
 View my flights✔
-Search flights
+Search flights✔
 purchase tickets ✔
-give rating 
-track my spending
+give rating ✔
+track my spending✔
 log out ✔
+
+1.更改数据库的问题
+2. 默认add flight 只能用当前airline 的 airplane id

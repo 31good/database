@@ -57,7 +57,7 @@ def flight_search():
     return_date = request.form["return_date"]
     cursor = conn.cursor()
     if trip_type == "round":
-        query = "SELECT e.flight_number, e.departure_date_time as departure_date, e.airline_name, " \
+        query = "SELECT e.flight_number, e.departure_date_time, e.airline_name, " \
                 "f.flight_number as return_flight_number, date(f.departure_date_time) as return_date, " \
                 "f.airline_name as return_airline_name from(SELECT b.flight_number, b.departure_date_time, " \
                 "b.airline_name, arrival_date_time FROM Airport as a join Flight as b on b.depart_airport_code=a.code " \
@@ -68,8 +68,7 @@ def flight_search():
                 "and c.name=%s and date(b.departure_date_time) = %s)f on e.arrival_date_time < f.departure_date_time"
         cursor.execute(query, (
             source_city, source_airport, des_city, des_airport, date, des_city, des_airport, source_city,
-            source_airport,
-            return_date))
+            source_airport, return_date))
     else:
         query = 'SELECT b.flight_number, b.departure_date_time, b.airline_name, ""as return_flight_number, "" as return_date, ""as return_airline_name ' \
                 'FROM Airport as a join (select flight_number, departure_date_time, ' \
@@ -99,7 +98,7 @@ def flight_search_home():
     booked_flight, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home("Future")
     cursor = conn.cursor()
     if trip_type == "round":
-        query = "SELECT e.flight_number, e.departure_date_time as departure_date, e.airline_name, " \
+        query = "SELECT e.flight_number, e.departure_date_time, e.airline_name, " \
                 "f.flight_number as return_flight_number, date(f.departure_date_time) as return_date, " \
                 "f.airline_name as return_airline_name from(SELECT b.flight_number, b.departure_date_time, " \
                 "b.airline_name, arrival_date_time FROM Airport as a join Flight as b on b.depart_airport_code=a.code " \
@@ -124,10 +123,12 @@ def flight_search_home():
     ##error = "Error with the input"
     if (not data):
         error = "No flight founded, please check your flight information"
-        return render_template("customer_home.html", error1=error, future_flight=booked_flight, flight_type=flight_type, not_commented_flights=data2,
-                               last_6_month_spend=last_6_month_spend,past_year_spend=past_year_spend)
-    return render_template("customer_home.html", posts1=data, future_flight=booked_flight, flight_type=flight_type, not_commented_flights=data2,
-                               last_6_month_spend=last_6_month_spend,past_year_spend=past_year_spend)
+        return render_template("customer_home.html", error1=error, future_flight=booked_flight, flight_type=flight_type,
+                               not_commented_flights=data2,
+                               last_6_month_spend=last_6_month_spend, past_year_spend=past_year_spend)
+    return render_template("customer_home.html", posts1=data, future_flight=booked_flight, flight_type=flight_type,
+                           not_commented_flights=data2,
+                           last_6_month_spend=last_6_month_spend, past_year_spend=past_year_spend)
 
 
 @app.route('/See_status', methods=['GET', 'POST'])
@@ -150,6 +151,7 @@ def See_status():
         return render_template("index.html", error2=error)
     ##error = "Error with the input"
     return render_template("index.html", status=data["status"])
+
 
 def get_customer_home(status):
     username = session['username']
@@ -185,7 +187,8 @@ def get_customer_home(status):
     cursor.execute(query, (username))
     last_6_month_spend = cursor.fetchall()
     cursor.close()
-    return data1, flight_type,data2, last_6_month_spend,past_year_spend
+    return data1, flight_type, data2, last_6_month_spend, past_year_spend
+
 
 @app.route('/customer_home/<int:if_initial>', methods=['GET', 'POST'])
 def customer_home(if_initial):
@@ -208,7 +211,10 @@ def buy_ticket():
     booked_flight, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home("Future")
     if (not card_type):
         error = "Please check the box for card type"
-        return render_template('customer_home.html', username=username, error2=error)
+        return render_template('customer_home.html', username=username, error2=error, future_flight=booked_flight,
+                               flight_type=flight_type,
+                               not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                               past_year_spend=past_year_spend)
     flight_number = request.form["flight_number"]
     airline_name = request.form["airline_name"]
     dep_date = request.form["departure_date"]
@@ -224,16 +230,20 @@ def buy_ticket():
     if (not data):
         cursor.close()
         error = "Please check the flight information"
-        return render_template('customer_home.html', username=username, error2=error)
+        return render_template('customer_home.html', username=username, error2=error, future_flight=booked_flight,
+                               flight_type=flight_type,
+                               not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                               past_year_spend=past_year_spend)
     query = "SELECT ticket_id FROM ticket WHERE flight_number=%s and departure_date_time=%s " \
             "and airline_name=%s and ticket_id not in (SELECT ticket_id FROM buy) LIMIT 1"
     cursor.execute(query, (flight_number, dep_date, airline_name))
     ticket_id = cursor.fetchone()
     if not ticket_id:
         cursor.close()
-        return render_template('customer_home.html', username=username, fault="the flight is full", future_flight=booked_flight, flight_type=flight_type,
-                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
-                           past_year_spend=past_year_spend)
+        return render_template('customer_home.html', username=username, fault="the flight is full",
+                               future_flight=booked_flight, flight_type=flight_type,
+                               not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                               past_year_spend=past_year_spend)
     else:
         ticket_id = ticket_id["ticket_id"]
         query = "SELECT count(distinct ticket_id) as remain, num_seats FROM ticket natural join airplane natural join flight " \
@@ -249,8 +259,9 @@ def buy_ticket():
         cursor.execute(query, (flight_number, dep_date, airline_name))
         base_price = cursor.fetchone()["base_price"]
         query = 'INSERT INTO buy VALUES(%s,%s,now(),%s,%s,%s,%s, %s)'
-        if remain / num_seats <= 0.25:
-            cursor.execute(query,(ticket_id, username, name_on_card, card_num, card_type, expir_date, base_price * 1.25))
+        if (remain-1) / num_seats <= 0.25:
+            cursor.execute(query,
+                           (ticket_id, username, name_on_card, card_num, card_type, expir_date, base_price * 1.25))
         else:
             cursor.execute(query, (ticket_id, username, name_on_card, card_num, card_type, expir_date, base_price))
         query = "select email from rate where email = %s and airline_name = %s and departure_date_time = %s and flight_number = %s"
@@ -260,9 +271,11 @@ def buy_ticket():
             query = "INSERT INTO rate VALUES(%s,%s,%s,%s,Null,Null)"
             cursor.execute(query, (username, airline_name, dep_date, flight_number))
         cursor.close()
-        return render_template('customer_home.html', username=username, success="Successful buy tickets", future_flight=booked_flight, flight_type=flight_type,
-                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
-                           past_year_spend=past_year_spend)
+        booked_flight, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home("Future")
+        return render_template('customer_home.html', username=username, success="Successful buy tickets",
+                               future_flight=booked_flight, flight_type=flight_type,
+                               not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                               past_year_spend=past_year_spend)
 
 
 @app.route('/comment_and_rate', methods=['GET', 'POST'])
@@ -283,9 +296,10 @@ def comment_and_rate():
     if (not data):
         cursor.close()
         error = "Please check the flight information"
-        return render_template('customer_home.html', username=username, error3=error, future_flight=booked_flight, flight_type=flight_type,
-                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
-                           past_year_spend=past_year_spend)
+        return render_template('customer_home.html', username=username, error3=error, future_flight=booked_flight,
+                               flight_type=flight_type,
+                               not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                               past_year_spend=past_year_spend)
     query = "SELECT flight_number,departure_date_time,airline_name FROM rate " \
             "WHERE flight_number=%s and airline_name = %s and departure_date_time =%s and email=%s and comment is not Null"
     cursor.execute(query, (flight_number, airline_name, dep_date, username))
@@ -293,13 +307,16 @@ def comment_and_rate():
     if (data):
         cursor.close()
         error = "You have already commented or rated this flight"
-        return render_template('customer_home.html', username=username, error3=error, future_flight=booked_flight, flight_type=flight_type,
-                           not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
-                           past_year_spend=past_year_spend)
+        return render_template('customer_home.html', username=username, error3=error, future_flight=booked_flight,
+                               flight_type=flight_type,
+                               not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
+                               past_year_spend=past_year_spend)
     query = 'UPDATE rate SET rating=%s, comment=%s WHERE email=%s and airline_name=%s and departure_date_time=%s and flight_number=%s'
     cursor.execute(query, (rate, comment, username, airline_name, dep_date, flight_number))
     cursor.close()
-    return render_template('customer_home.html', username=username, success="Successful rate and commented", future_flight=booked_flight, flight_type=flight_type,
+    booked_flight, flight_type, data2, last_6_month_spend, past_year_spend = get_customer_home("Future")
+    return render_template('customer_home.html', username=username, success="Successful rate and commented",
+                           future_flight=booked_flight, flight_type=flight_type,
                            not_commented_flights=data2, last_6_month_spend=last_6_month_spend,
                            past_year_spend=past_year_spend)
 
@@ -319,13 +336,16 @@ def track_spending():
     data1 = cursor.fetchall()
     data1 = fill_month(start_date, end_date, "total_spend", data1)
     if not data1:
-        return render_template('customer_home.html', username=username, error4="No Spend found, please check the information", start_date=start_date,
-                               end_date=end_date, future_flight=booked_flight, flight_type=flight_type, not_commented_flights=data2,
-                               last_6_month_spend=last_6_month_spend,past_year_spend=past_year_spend)
+        return render_template('customer_home.html', username=username,
+                               error4="No Spend found, please check the information", start_date=start_date,
+                               end_date=end_date, future_flight=booked_flight, flight_type=flight_type,
+                               not_commented_flights=data2,
+                               last_6_month_spend=last_6_month_spend, past_year_spend=past_year_spend)
     else:
         return render_template('customer_home.html', username=username, track_spend=data1, start_date=start_date,
-                               end_date=end_date, future_flight=booked_flight, flight_type=flight_type, not_commented_flights=data2,
-                               last_6_month_spend=last_6_month_spend,past_year_spend=past_year_spend)
+                               end_date=end_date, future_flight=booked_flight, flight_type=flight_type,
+                               not_commented_flights=data2,
+                               last_6_month_spend=last_6_month_spend, past_year_spend=past_year_spend)
 
 
 # TODO: check
@@ -382,10 +402,11 @@ def get_staff_home_data():
     cursor.execute(query, (airline))
     sum_year = cursor.fetchone()["sum"]
     # most frequent customer
-    query = "SELECT count(*) as count, email FROM buy GROUP BY email ORDER BY count DESC LIMIT 1"
-    cursor.execute(query)
-    email=cursor.fetchone()
-    if (email==None):
+    query = "SELECT count(*) as count, email FROM buy join ticket on (buy.ticket_id=ticket.ticket_id) WHERE airline_name = %s GROUP BY email ORDER BY count DESC LIMIT 1"
+    cursor.execute(query, (airline))
+    email = cursor.fetchone()
+    # print(email)
+    if (email == None):
         email = "No Customer Buy Tickets for this Airline"
     else:
         email = email["email"]
@@ -577,7 +598,7 @@ def create_new_flights():
         arrival_airport_code))
     query = "SELECT max(ticket_id) AS max FROM ticket"
     cursor.execute(query)
-    ticket_id_max=cursor.fetchone()
+    ticket_id_max = cursor.fetchone()
     if (not ticket_id_max):
         ticket_id_max = 0
     else:
@@ -650,6 +671,7 @@ def view_reports():
     cursor.execute(query, (airline_name, start_date, end_date))
     ticket_sold = cursor.fetchall()
     ticket_sold = fill_month(start_date, end_date, "ticket_count", ticket_sold)
+    # print(ticket_sold)
     cursor.close()
     error = Auth_staff()
     if (error != None):
@@ -657,15 +679,18 @@ def view_reports():
                                airline_fights=data1, destination_3_months=data2,
                                destination_year=data3, sum_month=sum_month, sum_year=sum_year,
                                customer_name=email, customer_flights=data6, owned_airplane=data7)
-    return render_template('staff_home.html', username=username, ticket_sold = ticket_sold, start_date = start_date, end_date = end_date,
-                               airline_fights=data1, destination_3_months=data2,
-                               destination_year=data3, sum_month=sum_month, sum_year=sum_year,
-                               customer_name=email, customer_flights=data6, owned_airplane=data7)
+    return render_template('staff_home.html', username=username, ticket_sold=ticket_sold, start_date=start_date,
+                           end_date=end_date,
+                           airline_fights=data1, destination_3_months=data2,
+                           destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                           customer_name=email, customer_flights=data6, owned_airplane=data7)
+
 
 def fill_month(start_date, end_date, variable, lst):
-    if start_date<end_date:
+    if start_date > end_date:
         return lst
     else:
+        # print(lst)
         start_year = int(start_date[0:4])
         start_month = int(start_date[5:7])
         end_year = int(end_date[0:4])
@@ -676,11 +701,12 @@ def fill_month(start_date, end_date, variable, lst):
         if_exist = False;
         result = []
         while if_end == False:
+            # print(result)
             if curr_year == end_year and curr_month == end_month:
                 for dic in lst:
                     if dic["year"] == curr_year and dic["month"] == curr_month:
                         result.insert(0, dic)
-                        if_exist = True;
+                        if_exist = True
                         break
                 if if_exist == False:
                     new_dic = {}
@@ -702,11 +728,11 @@ def fill_month(start_date, end_date, variable, lst):
                     new_dic["month"] = curr_month
                     new_dic[variable] = 0
                     result.insert(0, new_dic)
-                    if curr_month < 12:
-                        curr_month += 1
-                    else:
-                        curr_year += 1
-                        curr_month = 1
+                if curr_month < 12:
+                    curr_month += 1
+                else:
+                    curr_year += 1
+                    curr_month = 1
                 if_exist = False
         return result
 
@@ -725,6 +751,16 @@ def view_rating():
     dep_date = request.form["departure_date"]
     dep_date = dep_date.replace("T", " ") + ":00"
     cursor = conn.cursor()
+    query = "SELECT * FROM flight WHERE flight_number=%s and departure_date_time = %s and airline_name=%s"
+    cursor.execute(query, (flight_number, dep_date, airline_name))
+    data = cursor.fetchall()
+    if (not data):
+        cursor.close()
+        error = "No Flight Found, Please check your flight information"
+        return render_template("staff_home.html", error7=error, username=username, airline_fights=data1,
+                               destination_3_months=data2,
+                               destination_year=data3, sum_month=sum_month, sum_year=sum_year,
+                               customer_name=email, customer_flights=data6, owned_airplane=data7)
     query = 'SELECT avg(rating) AS avg FROM rate WHERE flight_number = %s and departure_date_time = %s and airline_name=%s and comment is not Null'
     cursor.execute(query, (flight_number, dep_date, airline_name))
     data = cursor.fetchone()
